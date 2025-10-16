@@ -1,3 +1,4 @@
+// types.ts
 
 export interface User {
   id: string;
@@ -13,11 +14,23 @@ export interface User {
   banner?: string;
   hasActiveStory?: boolean;
   verified?: boolean;
+  isSponsored?: boolean;
   followingIds: Set<string>;
 }
 
+export interface PollOption {
+    id: number;
+    text: string;
+    votes: number;
+}
+
+export interface Poll {
+    options: PollOption[];
+    endsAt: string; // Could be a date string
+}
+
 export interface Tallk {
-  id: string;
+  id:string;
   author: User;
   content: string;
   image?: string;
@@ -26,6 +39,7 @@ export interface Tallk {
   retallks: number;
   replies: Tallk[];
   isPromoted?: boolean;
+  poll?: Poll;
 }
 
 export interface Story {
@@ -97,4 +111,5 @@ export interface Space {
     listeners: User[];
     listenerCount: number;
     isRecording: boolean;
+    ticketed?: boolean;
 }

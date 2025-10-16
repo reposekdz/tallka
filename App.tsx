@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -94,7 +93,6 @@ const App: React.FC = () => {
   };
   
   const handleLike = (tallkId: string) => {
-      // In a real app, this would update state and call an API
       console.log(`Liked tallk ${tallkId}`);
   };
 
@@ -165,7 +163,6 @@ const App: React.FC = () => {
         case 'reply':
             return <TallkComposer currentUser={currentUser} onPostTallk={(content) => handlePostReply(content, modalData.id)} replyingTo={modalData} />;
         case 'quote':
-            // Quote could have its own component, but for now, we'll reuse composer
             return <div><TallkComposer currentUser={currentUser} onPostTallk={handlePostTallk} /><div className="p-4 m-4 border rounded-xl">{modalData.content}</div></div>;
         case 'editProfile':
             return <EditProfileModal user={currentUser} onSave={handleSaveProfile} onClose={closeModal} />;
@@ -182,7 +179,7 @@ const App: React.FC = () => {
         .fb-border-blue { border-color: #1877F2; }
         .fb-hover-bg-blue:hover { background-color: #166FE5; }
        `}</style>
-      <div className="container mx-auto flex">
+      <div className="container mx-auto flex justify-center">
         <Sidebar 
           currentUser={currentUser} 
           onNavigate={handleNavigate} 
@@ -190,7 +187,7 @@ const App: React.FC = () => {
           onSwitchAccount={setCurrentUser}
           onLogout={() => alert('Logged out!')}
         />
-        <main className="w-full max-w-[600px] border-x border-[var(--border-color)]">
+        <main className="w-full max-w-[600px] border-x border-[var(--border-color)] min-w-0">
           {renderPage()}
         </main>
         <RightSidebar onNavigate={handleNavigate}/>

@@ -1,12 +1,12 @@
+// data/mockData.ts
 
-// FIX: Corrected type imports to resolve circular dependency and added missing Message type.
 import type { User, Tallk, Story, Trend, Community, UserList, Moment, Notification, Conversation, Space, Message } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
-  name: 'Kigali Coder',
-  username: 'kigalicoder',
-  avatar: 'https://i.pravatar.cc/150?u=u1',
+  name: 'Fidel Ndugutse',
+  username: 'fidel_ndungutse',
+  avatar: 'https://i.pravatar.cc/150?u=fidel_ndungutse',
   following: 150,
   followers: 2500,
   joinedDate: 'Joined July 2021',
@@ -16,14 +16,14 @@ export const mockUser: User = {
   banner: 'https://picsum.photos/seed/u1-banner/1500/500',
   hasActiveStory: true,
   verified: true,
-  followingIds: new Set(['u2', 'follow2']), // Now following Jane Doe and AI Art
+  followingIds: new Set(['u2', 'follow2']),
 };
 
 export const anotherUser: User = {
   id: 'u2',
-  name: 'Jane Doe',
-  username: 'janedoe',
-  avatar: 'https://i.pravatar.cc/150?u=u2',
+  name: 'Boris Bi',
+  username: 'boris_bi',
+  avatar: 'https://i.pravatar.cc/150?u=boris_bi',
   following: 300,
   followers: 5000,
   joinedDate: 'Joined May 2020',
@@ -37,19 +37,36 @@ export const anotherUser: User = {
 
 export const thirdUser: User = {
   id: 'u3',
-  name: 'John Smith',
-  username: 'johnsmith',
-  avatar: 'https://i.pravatar.cc/150?u=u3',
+  name: 'Heisbare',
+  username: 'heisbare',
+  avatar: 'https://i.pravatar.cc/150?u=heisbare',
   following: 50,
   followers: 100,
   joinedDate: 'Joined January 2022',
   bio: 'Exploring the world one step at a time.',
   location: 'London, UK',
   banner: 'https://picsum.photos/seed/u3-banner/1500/500',
+  hasActiveStory: true,
+  verified: true,
   followingIds: new Set(['u1']),
 };
 
-export const mockUsers: User[] = [mockUser, anotherUser, thirdUser];
+export const sponsoredUser: User = {
+  id: 'u4',
+  name: 'EasySite AI',
+  username: 'easysiteai',
+  avatar: 'https://i.pravatar.cc/150?u=easysiteai',
+  following: 0,
+  followers: 150000,
+  joinedDate: 'Joined June 2023',
+  bio: 'Build your website in seconds with the power of AI. #AI #WebBuilder',
+  isSponsored: true,
+  hasActiveStory: true,
+  followingIds: new Set(),
+};
+
+
+export const mockUsers: User[] = [mockUser, anotherUser, thirdUser, sponsoredUser];
 
 export const usersToFollow: User[] = [
     { ...thirdUser, id: 'follow1', username: 'johnsmith_new', avatar: 'https://i.pravatar.cc/150?u=follow1', followingIds: new Set()},
@@ -99,11 +116,19 @@ export const mockTallks: Tallk[] = [
   {
     id: 't2',
     author: anotherUser,
-    content: 'The importance of good UX design cannot be overstated. A beautiful UI is useless if the user can\'t figure out how to use it.',
+    content: 'What should be the next big feature for design tools in 2024?',
     timestamp: '8h',
     likes: 543,
     retallks: 128,
-    replies: []
+    replies: [],
+    poll: {
+      options: [
+        { id: 1, text: 'AI-powered automation', votes: 482 },
+        { id: 2, text: 'Real-time collaboration', votes: 621 },
+        { id: 3, text: 'Better prototyping tools', votes: 310 },
+      ],
+      endsAt: '1d',
+    }
   },
   {
     id: 't3',
@@ -140,10 +165,11 @@ export const mockTrends: Trend[] = [
 ];
 
 export const mockStories: Story[] = [
-  { id: 's1', user: mockUser, mediaUrl: 'https://picsum.photos/seed/story1/450/800', mediaType: 'image', duration: 7, timestamp: '2h' },
-  { id: 's2', user: mockUser, mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', mediaType: 'video', timestamp: '1h' },
-  { id: 's3', user: anotherUser, mediaUrl: 'https://picsum.photos/seed/story3/450/800', mediaType: 'image', duration: 5, timestamp: '3h' },
-  { id: 's4', user: thirdUser, mediaUrl: 'https://picsum.photos/seed/story4/450/800', mediaType: 'image', duration: 6, timestamp: '5h' },
+  { id: 's1', user: mockUser, mediaUrl: 'https://picsum.photos/seed/story1/450/800', mediaType: 'image', duration: 7, timestamp: 'Now' },
+  { id: 's2', user: mockUser, mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', mediaType: 'video', timestamp: 'Now' },
+  { id: 's3', user: anotherUser, mediaUrl: 'https://picsum.photos/seed/story3/450/800', mediaType: 'image', duration: 5, timestamp: 'Now' },
+  { id: 's4', user: thirdUser, mediaUrl: 'https://picsum.photos/seed/story4/450/800', mediaType: 'image', duration: 6, timestamp: 'Now' },
+  { id: 's5', user: sponsoredUser, mediaUrl: 'https://picsum.photos/seed/story5/450/800', mediaType: 'image', duration: 8, timestamp: 'Sponsored' },
 ];
 
 export const mockCommunities: Community[] = [
@@ -181,6 +207,6 @@ export const mockConversations: Conversation[] = [
 ];
 
 export const mockSpaces: Space[] = [
-    { id: 'sp1', title: 'Tech Talk: The Future of Frontend', hosts: [mockUser], speakers: [anotherUser], listeners: [thirdUser], listenerCount: 125, isRecording: true },
+    { id: 'sp1', title: 'Tech Talk: The Future of Frontend', hosts: [mockUser], speakers: [anotherUser], listeners: [thirdUser], listenerCount: 125, isRecording: true, ticketed: true },
     { id: 'sp2', title: 'AMA with a Senior Designer', hosts: [anotherUser], speakers: [], listeners: [], listenerCount: 340, isRecording: false },
 ];

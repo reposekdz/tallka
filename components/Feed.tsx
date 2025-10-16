@@ -1,16 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import TallkComposer from './TallkComposer';
 import TallkPost from './TallkPost';
 import StoriesBar from './StoriesBar';
-import { promotedTallk, mockUser, mockStories, mockUsers } from '../data/mockData';
+import { promotedTallk, mockUser, mockStories, mockUsers, sponsoredUser } from '../data/mockData';
 import type { Tallk, User, Story } from '../types';
 
 interface FeedProps {
   tallks: Tallk[];
   currentUser: User;
   onPostTallk: (content: string, image?: string) => void;
-  // FIX: Added 'analytics' to the onNavigate page types to match TallkPost's requirements.
   onNavigate: (page: 'profile' | 'home' | 'tallkDetail' | 'analytics', data?: User | Tallk) => void;
   bookmarks: Set<string>;
   onToggleBookmark: (tallkId: string) => void;
@@ -27,7 +25,7 @@ const Feed: React.FC<FeedProps> = ({ tallks, currentUser, onPostTallk, onNavigat
   useEffect(() => {
     const timer = setTimeout(() => {
         setNewTallksCount(Math.floor(Math.random() * 3) + 1);
-    }, 15000); // show after 15 seconds
+    }, 15000);
     return () => clearTimeout(timer);
   }, [tallks]);
 
@@ -43,6 +41,13 @@ const Feed: React.FC<FeedProps> = ({ tallks, currentUser, onPostTallk, onNavigat
       tallksWithPromo.splice(2, 0, promotedTallk);
   }
 
+  const usersWithStories = [mockUser, ...mockUsers.filter(u => u.hasActiveStory && u.id !== mockUser.id)];
+  // Add sponsored user to the stories bar if they are not already there
+  if (!usersWithStories.find(u => u.id === sponsoredUser.id)) {
+      usersWithStories.push(sponsoredUser);
+  }
+
+
   const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button onClick={onClick} className="w-1/2 py-4 text-center hover:bg-[var(--bg-secondary)]/50 transition-colors duration-200">
       <span className={`font-bold ${isActive ? 'text-[var(--text-primary)] border-b-4 fb-border-blue' : 'text-[var(--text-secondary)]'} pb-4`}>
@@ -52,7 +57,7 @@ const Feed: React.FC<FeedProps> = ({ tallks, currentUser, onPostTallk, onNavigat
   );
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="sticky top-0 bg-[var(--bg-primary)] bg-opacity-80 backdrop-blur-md z-10">
         <h1 className="text-xl font-bold p-4">Home</h1>
         <div className="flex border-b border-[var(--border-color)]">
@@ -61,7 +66,7 @@ const Feed: React.FC<FeedProps> = ({ tallks, currentUser, onPostTallk, onNavigat
         </div>
       </div>
        <div className="border-b border-[var(--border-color)]">
-         <StoriesBar stories={mockStories} onOpenStory={onOpenStory} usersWithStories={[mockUser, ...mockUsers.filter(u => u.hasActiveStory && u.id !== mockUser.id)]} />
+         <StoriesBar stories={mockStories} onOpenStory={onOpenStory} usersWithStories={usersWithStories} />
       </div>
       <TallkComposer onPostTallk={onPostTallk} currentUser={currentUser} />
       {newTallksCount > 0 && (
