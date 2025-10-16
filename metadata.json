@@ -1,0 +1,5 @@
+{
+  "name": "Tallka",
+  "description": "A social media platform inspired by Twitter, allowing users to post updates ('Tallks'), interact with others' content, and discover trending topics. This app provides a modern, responsive user interface for a familiar social media experience.",
+  "requestFramePermissions": []
+}

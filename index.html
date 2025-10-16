@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tallka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<style>
+  .theme-dim {
+    --bg-primary: #15202B;
+    --bg-secondary: #192734;
+    --border-color: #38444d;
+    --text-primary: #ffffff;
+    --text-secondary: #8899a6;
+  }
+  .theme-lights-out {
+    --bg-primary: #000000;
+    --bg-secondary: #15181c;
+    --border-color: #2f3336;
+    --text-primary: #d9d9d9;
+    --text-secondary: #6e767d;
+  }
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+</style>
+</head>
+  <body class="theme-dim">
+    <div id="root" class="theme"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
