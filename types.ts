@@ -13,6 +13,7 @@ export interface User {
   isVerified?: boolean;
   isProfessional?: boolean;
   hasActiveStory?: boolean;
+  likedTallkIds?: string[];
 }
 
 export interface Poll {
@@ -105,4 +106,12 @@ export interface Moment {
     description: string;
     coverImage: string;
     tallks: Tallk[];
+}
+
+export interface Story {
+  id: string;
+  user: User;
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  duration: number; // in seconds
 }

@@ -1,6 +1,6 @@
-import type { User, Tallk, Notification, Community, Space, Conversation, Message, UserList, Moment } from '../types';
+import type { User, Tallk, Notification, Community, Space, Conversation, Message, UserList, Moment, Story } from '../types';
 
-export const mockUser: User = {
+export const user1: User = {
   id: 'u1',
   name: 'Kigali Coder',
   username: 'kigalicoder',
@@ -14,9 +14,10 @@ export const mockUser: User = {
   followers: 1200,
   isVerified: false,
   isProfessional: true,
+  likedTallkIds: ['t-video', 't-poll'],
 };
 
-export const anotherUser: User = {
+export const user2: User = {
   id: 'u2',
   name: 'Jane Doe',
   username: 'janedoe',
@@ -30,6 +31,7 @@ export const anotherUser: User = {
   followers: 5400,
   isVerified: false,
   hasActiveStory: true,
+  likedTallkIds: ['t-pinned', 't-shop'],
 };
 
 export const usersToFollow: User[] = [
@@ -41,6 +43,7 @@ export const usersToFollow: User[] = [
         following: 50,
         followers: 10000,
         isVerified: false,
+        likedTallkIds: [],
     },
     {
         id: 'u4',
@@ -52,6 +55,7 @@ export const usersToFollow: User[] = [
         isVerified: true,
         isProfessional: true,
         hasActiveStory: true,
+        likedTallkIds: [],
     },
     {
         id: 'u5',
@@ -61,8 +65,14 @@ export const usersToFollow: User[] = [
         following: 500,
         followers: 8500,
         isVerified: false,
+        likedTallkIds: [],
     }
 ];
+
+export const mockUsers: User[] = [user1, user2, ...usersToFollow];
+export const mockUser = user1; // Default user
+export const anotherUser = user2;
+
 
 const mockReplies: Tallk[] = [
     {
@@ -72,7 +82,17 @@ const mockReplies: Tallk[] = [
         createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
         likes: 15,
         retallks: 2,
-        replies: [],
+        replies: [
+             {
+                id: 'tr1-1',
+                author: usersToFollow[0],
+                content: "Indeed! The component system is very intuitive.",
+                createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+                likes: 5,
+                retallks: 0,
+                replies: [],
+            }
+        ],
     },
     {
         id: 'tr2',
@@ -286,4 +306,10 @@ export const mockLists: UserList[] = [
 
 export const mockMoments: Moment[] = [
     { id: 'm1', title: 'Highlights from the #TechInAfrica Summit', description: 'The best moments and insights from this year\'s biggest tech event in Africa.', coverImage: 'https://picsum.photos/seed/moment1/600/800', tallks: [mockTallks[0], mockTallks[4]] }
+];
+
+export const mockStories: Story[] = [
+    { id: 'story1', user: anotherUser, mediaUrl: 'https://picsum.photos/seed/story1/1080/1920', mediaType: 'image', duration: 5 },
+    { id: 'story2', user: anotherUser, mediaUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4', mediaType: 'video', duration: 10 },
+    { id: 'story3', user: usersToFollow[1], mediaUrl: 'https://picsum.photos/seed/story2/1080/1920', mediaType: 'image', duration: 5 },
 ];

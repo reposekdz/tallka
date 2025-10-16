@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { FontSizeIcon } from './IconComponents';
 
 type Theme = 'dim' | 'lights-out';
 
@@ -8,6 +9,12 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ currentTheme, onThemeChange }) => {
+  const [fontSize, setFontSize] = useState(15);
+  const [isAutoplay, setAutoplay] = useState(true);
+  
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
 
   const SettingItem: React.FC<{title: string, description: string, children?: React.ReactNode}> = ({title, description, children}) => (
     <div className="p-4 border-b border-[var(--border-color)] hover:bg-[var(--bg-secondary)]/50 cursor-pointer">
@@ -34,6 +41,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ currentTheme, onThemeChange
         <span>{label}</span>
      </label>
   );
+  
+  const Toggle: React.FC<{checked: boolean, onChange: (checked: boolean) => void}> = ({ checked, onChange }) => (
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+    </label>
+  );
 
   return (
     <div>
@@ -43,12 +57,22 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ currentTheme, onThemeChange
       <div>
         <SettingItem 
             title="Your account"
-            description="See information about your account, download an archive of your data, or learn about your account deactivation options."
+            description="See information about your account or learn about deactivation options."
+        />
+         <SettingItem 
+            title="Download an archive of your data"
+            description="Get a zip file with your account information, Tallks, and media."
         />
         <SettingItem 
             title="Security and account access"
-            description="Manage your account’s security and keep track of your account’s usage including apps that you have connected to your account."
+            description="Manage your account’s security and keep track of your account’s usage."
         />
+         <SettingItem 
+            title="Two-factor authentication"
+            description="Help protect your account from unauthorized access."
+        >
+          <Toggle checked={false} onChange={() => {}} />
+        </SettingItem>
         <SettingItem 
             title="Premium"
             description="Manage your Premium subscription and see available features."
@@ -65,10 +89,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ currentTheme, onThemeChange
             title="Restricted mode"
             description="This helps hide potentially sensitive content."
         >
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" value="" className="sr-only peer" />
-              <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
-            </label>
+            <Toggle checked={false} onChange={() => {}} />
         </SettingItem>
          <SettingItem 
             title="Notifications"
@@ -80,10 +101,37 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ currentTheme, onThemeChange
         />
          <div className="p-4 border-b border-[var(--border-color)]">
             <h3 className="font-bold">Display</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Customize your view. These settings affect all the Tallka accounts on this browser.</p>
-            <div className="mt-4 p-4 bg-[var(--bg-secondary)] rounded-lg flex justify-around">
-                <ThemeOption label="Dim" value="dim" />
-                <ThemeOption label="Lights Out" value="lights-out" />
+            <p className="text-sm text-[var(--text-secondary)]">Customize your view. These settings affect all accounts on this browser.</p>
+            <div className="mt-4 p-4 bg-[var(--bg-secondary)] rounded-lg">
+                <div className="flex items-center justify-between">
+                    <FontSizeIcon className="text-[var(--text-secondary)]" />
+                    <input 
+                        type="range" 
+                        min="12" 
+                        max="18" 
+                        step="1"
+                        value={fontSize}
+                        onChange={(e) => setFontSize(parseInt(e.target.value, 10))}
+                        className="w-full mx-4 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <FontSizeIcon className="w-8 h-8 text-[var(--text-secondary)]" />
+                </div>
+                <div className="flex justify-between items-center mt-6">
+                    <div>
+                        <h4 className="font-bold">Background</h4>
+                    </div>
+                    <div className="flex justify-around bg-[var(--bg-primary)] p-1 rounded-lg w-1/2">
+                        <ThemeOption label="Dim" value="dim" />
+                        <ThemeOption label="Lights Out" value="lights-out" />
+                    </div>
+                </div>
+                 <div className="flex justify-between items-center mt-6">
+                    <div>
+                        <h4 className="font-bold">Media Autoplay</h4>
+                        <p className="text-sm text-[var(--text-secondary)]">Play videos automatically in your feed.</p>
+                    </div>
+                     <Toggle checked={isAutoplay} onChange={setAutoplay} />
+                </div>
             </div>
          </div>
         <SettingItem 

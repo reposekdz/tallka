@@ -52,6 +52,12 @@ export const RetallkIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
   </svg>
 );
 
+export const QuoteIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+    </svg>
+);
+
 export const LikeIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
@@ -257,4 +263,33 @@ export const MagicIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M10 2.5a.75.75 0 01.75.75V5a.75.75 0 01-1.5 0V3.25a.75.75 0 01.75-.75zM5.05 5.05a.75.75 0 011.06 0L7.5 6.44a.75.75 0 11-1.06 1.06L5.05 6.11a.75.75 0 010-1.06zM2.5 10a.75.75 0 01.75-.75H5a.75.75 0 010 1.5H3.25a.75.75 0 01-.75-.75zM5.05 14.95a.75.75 0 010-1.06L6.44 12.5a.75.75 0 011.06 1.06L6.11 14.95a.75.75 0 01-1.06 0zM10 17.5a.75.75 0 01.75-.75H12a.75.75 0 010 1.5h-1.25a.75.75 0 01-.75-.75zM14.95 14.95a.75.75 0 01-1.06 0L12.5 13.56a.75.75 0 011.06-1.06l1.39 1.39a.75.75 0 010 1.06zM17.5 10a.75.75 0 01.75.75V12a.75.75 0 01-1.5 0v-1.25a.75.75 0 01.75-.75zM14.95 5.05a.75.75 0 010 1.06L13.56 7.5a.75.75 0 01-1.06-1.06l1.39-1.39a.75.75 0 011.06 0z" clipRule="evenodd" />
     </svg>
+);
+
+export const AddAccountIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+    </svg>
+);
+
+export const LogoutIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+);
+
+export const SummarizeIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+ <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
+  <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM3 10a7 7 0 1114 0 7 7 0 01-14 0z" clipRule="evenodd" />
+</svg>
+);
+
+
+export const FontSizeIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+ <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
+  <path d="M6.25 4.25a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 000-1.5H7V4.25z" />
+  <path d="M8.25 4.25a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h.25V4.25h-.25zM12.75 14.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" />
+  <path d="M11.75 15.75a.75.75 0 001.5 0v-1.5c0-.414-.336-.75-.75-.75h-.25v2.25h.25z" />
+  <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 002 3.75v12.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 16.25V3.75A1.75 1.75 0 0016.25 2H3.75zM3.5 3.75a.25.25 0 01.25-.25h12.5a.25.25 0 01.25.25v12.5a.25.25 0 01-.25.25H3.75a.25.25 0 01-.25-.25V3.75z" clipRule="evenodd" />
+</svg>
 );

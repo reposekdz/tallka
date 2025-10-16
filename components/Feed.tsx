@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import TallkComposer from './TallkComposer';
 import TallkPost from './TallkPost';
-import { promotedTallk, mockUser } from '../data/mockData';
-import type { Tallk, User } from '../types';
+import StoriesBar from './StoriesBar';
+import { promotedTallk, mockUser, mockStories } from '../data/mockData';
+import type { Tallk, User, Story } from '../types';
 
 interface FeedProps {
   tallks: Tallk[];
+  currentUser: User;
   onPostTallk: (content: string, image?: string) => void;
   onNavigate: (page: 'profile' | 'home' | 'tallkDetail', data?: User | Tallk) => void;
   bookmarks: Set<string>;
   onToggleBookmark: (tallkId: string) => void;
   onReply: (tallk: Tallk) => void;
+  onQuote: (tallk: Tallk) => void;
+  onLike: (tallkId: string) => void;
+  onOpenStory: (stories: Story[], startIndex: number) => void;
 }
 
-const Feed: React.FC<FeedProps> = ({ tallks, onPostTallk, onNavigate, bookmarks, onToggleBookmark, onReply }) => {
+const Feed: React.FC<FeedProps> = ({ tallks, currentUser, onPostTallk, onNavigate, bookmarks, onToggleBookmark, onReply, onQuote, onLike, onOpenStory }) => {
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
   const [newTallksCount, setNewTallksCount] = useState(0);
 
@@ -25,20 +30,6 @@ const Feed: React.FC<FeedProps> = ({ tallks, onPostTallk, onNavigate, bookmarks,
   }, [tallks]);
 
   const handleShowNewTallks = () => {
-    // This is a simulation. In a real app, you'd fetch and prepend new tallks.
-    const newTallk: Tallk = {
-      id: `t-new-${Date.now()}`,
-      author: { ...mockUser, name: "Fresh Poster", username:"freshposter", avatar: "https://picsum.photos/seed/new/200/200"},
-      content: `This is a brand new Tallk that just appeared! #${Math.random().toString(36).substring(7)}`,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      retallks: 0,
-      replies: [],
-    };
-    // Prepend new tallk to existing ones
-    // onPostTallk is not used here to avoid clearing the composer
-    // In a real app, this state would be managed differently.
-    // This is just to demonstrate the "Show new Tallks" button.
     setNewTallksCount(0); 
   };
   
@@ -67,7 +58,10 @@ const Feed: React.FC<FeedProps> = ({ tallks, onPostTallk, onNavigate, bookmarks,
             <TabButton label="Following" isActive={activeTab === 'following'} onClick={() => setActiveTab('following')} />
         </div>
       </div>
-      <TallkComposer onPostTallk={onPostTallk} />
+       <div className="border-b border-[var(--border-color)]">
+         <StoriesBar stories={mockStories} onOpenStory={onOpenStory} />
+      </div>
+      <TallkComposer onPostTallk={onPostTallk} currentUser={currentUser} />
       {newTallksCount > 0 && (
           <div className="text-center py-2 border-y border-[var(--border-color)]">
               <button onClick={handleShowNewTallks} className="text-sky-500 hover:underline">
@@ -80,10 +74,13 @@ const Feed: React.FC<FeedProps> = ({ tallks, onPostTallk, onNavigate, bookmarks,
           <TallkPost 
             key={`${tallk.id}-${index}`} 
             tallk={tallk} 
+            currentUser={currentUser}
             onNavigate={onNavigate} 
             isBookmarked={bookmarks.has(tallk.id)}
             onToggleBookmark={onToggleBookmark}
             onReply={onReply}
+            onQuote={onQuote}
+            onLike={onLike}
           />
         ))}
       </div>

@@ -1,13 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Tallk, User, Poll, Product } from '../types';
-import { ReplyIcon, RetallkIcon, LikeIcon, ShareIcon, BookmarkIcon, MoreIcon, BookmarkFillIcon, PinnedIcon, VerifiedBadgeIcon, AnalyticsIcon, EditIcon, BlockIcon, MuteIcon, ReportIcon, VoiceMessageIcon, ShopIcon } from './IconComponents';
+import { ReplyIcon, RetallkIcon, LikeIcon, ShareIcon, BookmarkIcon, MoreIcon, BookmarkFillIcon, PinnedIcon, VerifiedBadgeIcon, AnalyticsIcon, EditIcon, BlockIcon, MuteIcon, ReportIcon, VoiceMessageIcon, ShopIcon, QuoteIcon, SummarizeIcon } from './IconComponents';
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 interface TallkPostProps {
   tallk: Tallk;
+  currentUser: User;
   onNavigate: (page: 'profile' | 'home' | 'analytics' | 'tallkDetail', data?: User | Tallk) => void;
   isBookmarked: boolean;
   onToggleBookmark: (tallkId: string) => void;
   onReply: (tallk: Tallk) => void;
+  onQuote: (tallk: Tallk) => void;
+  onLike: (tallkId: string) => void;
   isThread?: boolean;
   isDetailView?: boolean;
 }
@@ -85,16 +91,12 @@ const QuoteTallk: React.FC<{ tallk: Tallk, onNavigate: (page: 'profile', user: U
     )
 }
 
-// Fix: Updated the `onNavigate` prop type to be compatible with the type passed from the `TallkPost` component.
 const TallkContent: React.FC<{ content: string, onNavigate: (page: 'profile' | 'home' | 'analytics' | 'tallkDetail', data?: User | Tallk) => void; }> = ({ content, onNavigate }) => {
     const handlePartClick = (e: React.MouseEvent, part: string) => {
         e.stopPropagation();
         if (part.startsWith('@')) {
-            // In a real app, you'd look up the user. Here, we can't.
-            // onNavigate('profile', foundUser);
             alert(`Navigating to profile ${part}`);
         } else if (part.startsWith('#')) {
-            // onNavigate('explore', { query: part });
             alert(`Searching for ${part}`);
         }
     }
@@ -113,16 +115,17 @@ const TallkContent: React.FC<{ content: string, onNavigate: (page: 'profile' | '
     );
 };
 
-const TallkPost: React.FC<TallkPostProps> = ({ tallk, onNavigate, isBookmarked, onToggleBookmark, onReply, isThread, isDetailView }) => {
-    const [isLiked, setIsLiked] = useState(false);
-    const [likeCount, setLikeCount] = useState(tallk.likes);
+const TallkPost: React.FC<TallkPostProps> = ({ tallk, currentUser, onNavigate, isBookmarked, onToggleBookmark, onReply, onQuote, onLike, isThread, isDetailView }) => {
     const [showMoreMenu, setShowMoreMenu] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+    const [showShareMenu, setShowShareMenu] = useState(false);
+    const moreMenuRef = useRef<HTMLDivElement>(null);
+    const shareMenuRef = useRef<HTMLDivElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const isLiked = currentUser.likedTallkIds?.includes(tallk.id) ?? false;
 
     const handleLike = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsLiked(!isLiked);
-        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+        onLike(tallk.id);
     }
     
     const handleBookmark = (e: React.MouseEvent) => {
@@ -134,24 +137,68 @@ const TallkPost: React.FC<TallkPostProps> = ({ tallk, onNavigate, isBookmarked, 
         e.stopPropagation();
         onReply(tallk);
     }
+    
+    const handleQuoteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onQuote(tallk);
+    }
+
+    const handleSummarize = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        alert("Summarizing thread... this might take a moment.");
+        try {
+            const threadContent = [tallk.content, ...tallk.replies.map(r => r.content)].join("\n---\n");
+            const prompt = `Summarize the following social media thread into a few bullet points:\n\n${threadContent}`;
+             const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+            });
+            alert(`AI Summary:\n\n${response.text}`);
+        } catch (error) {
+            console.error("Error summarizing thread:", error);
+            alert("Sorry, could not summarize the thread at this time.");
+        }
+    };
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setShowMoreMenu(false);
-            }
+            if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) setShowMoreMenu(false);
+            if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) setShowShareMenu(false);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [menuRef]);
+    }, []);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    video.play().catch(e => console.error("Autoplay failed", e));
+                } else {
+                    video.pause();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        observer.observe(video);
+        return () => observer.disconnect();
+    }, []);
   
-    const ActionButton: React.FC<{ icon: React.ReactNode; count?: number; colorClass: string; activeColorClass?: string; onClick?: (e: React.MouseEvent) => void, isActive?: boolean }> = ({ icon, count, colorClass, activeColorClass, onClick, isActive }) => (
-        <button onClick={onClick} className={`flex items-center space-x-2 ${colorClass} group transition-colors duration-200`}>
-            <div className={`p-2 rounded-full group-hover:bg-opacity-20 ${isActive ? activeColorClass : colorClass.replace('text-', 'bg-')} ${isActive ? '' : 'bg-opacity-0'} group-hover:${activeColorClass}`}>
-               {icon}
-            </div>
-            <span className={`group-hover:${activeColorClass?.replace('bg-', 'text-')} ${isActive ? activeColorClass?.replace('bg-', 'text-') : ''}`}>{count !== undefined && count > 0 && count}</span>
-        </button>
+    const ActionButton: React.FC<{ icon: React.ReactNode; count?: number; colorClass: string; activeColorClass?: string; onClick?: (e: React.MouseEvent) => void, isActive?: boolean, children?: React.ReactNode }> = ({ icon, count, colorClass, activeColorClass, onClick, isActive, children }) => (
+        <div className="relative">
+            <button onClick={onClick} className={`flex items-center space-x-2 ${colorClass} group transition-colors duration-200`}>
+                <div className={`p-2 rounded-full group-hover:bg-opacity-20 ${isActive ? activeColorClass : colorClass.replace('text-', 'bg-')} ${isActive ? '' : 'bg-opacity-0'} group-hover:${activeColorClass}`}>
+                   {icon}
+                </div>
+                <span className={`group-hover:${activeColorClass?.replace('bg-', 'text-')} ${isActive ? activeColorClass?.replace('bg-', 'text-') : ''}`}>{count !== undefined && count > 0 && count}</span>
+            </button>
+            {children}
+        </div>
     );
 
   return (
@@ -160,7 +207,7 @@ const TallkPost: React.FC<TallkPostProps> = ({ tallk, onNavigate, isBookmarked, 
          <div className={`relative ${tallk.author.hasActiveStory ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] ring-sky-400 rounded-full' : ''}`}>
            <img src={tallk.author.avatar} alt="Author Avatar" className="w-12 h-12 rounded-full cursor-pointer" onClick={(e) => { e.stopPropagation(); onNavigate('profile', tallk.author); }}/>
          </div>
-         {(isThread || isDetailView) && <div className="w-0.5 h-full bg-[var(--border-color)] mt-2"></div>}
+         {(isThread || (isDetailView && tallk.replies.length > 0)) && <div className="w-0.5 h-full bg-[var(--border-color)] mt-2"></div>}
       </div>
       <div className="flex-1">
         {tallk.isPinned && <div className="text-[var(--text-secondary)] text-sm flex items-center space-x-2 mb-1"><PinnedIcon/><p>Pinned Tallk</p></div>}
@@ -175,18 +222,19 @@ const TallkPost: React.FC<TallkPostProps> = ({ tallk, onNavigate, isBookmarked, 
             <div className="text-[var(--text-secondary)] relative">
                 <button onClick={(e) => { e.stopPropagation(); setShowMoreMenu(!showMoreMenu); }} className="p-1 rounded-full hover:bg-sky-500/20 text-[var(--text-secondary)] hover:text-sky-500"><MoreIcon/></button>
                  {showMoreMenu && (
-                    <div ref={menuRef} className="absolute top-8 right-0 w-60 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg shadow-lg z-20">
-                        <button className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><EditIcon /><span>Edit Tallk</span></button>
+                    <div ref={moreMenuRef} className="absolute top-8 right-0 w-60 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg shadow-lg z-20">
+                        {tallk.author.id === currentUser.id && <button className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><EditIcon /><span>Edit Tallk</span></button>}
                         <button onClick={(e) => {e.stopPropagation(); alert(`Muting @${tallk.author.username}`)}} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><MuteIcon /><span>Mute @{tallk.author.username}</span></button>
                         <button onClick={(e) => {e.stopPropagation(); alert(`Blocking @${tallk.author.username}`)}} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2 text-red-500"><BlockIcon /><span>Block @{tallk.author.username}</span></button>
                         <button onClick={(e) => {e.stopPropagation(); alert(`Reporting Tallk`)}} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><ReportIcon /><span>Report Tallk</span></button>
+                        {isDetailView && tallk.replies.length > 2 && <button onClick={handleSummarize} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><SummarizeIcon /><span>Summarize with AI</span></button>}
                     </div>
                 )}
             </div>
         </div>
         <TallkContent content={tallk.content} onNavigate={onNavigate}/>
         {tallk.image && <img src={tallk.image} alt="Tallk content" className="mt-3 rounded-2xl border border-[var(--border-color)]" />}
-        {tallk.videoUrl && <video src={tallk.videoUrl} controls className="mt-3 rounded-2xl border border-[var(--border-color)] w-full"></video>}
+        {tallk.videoUrl && <video ref={videoRef} src={tallk.videoUrl} controls muted loop playsInline className="mt-3 rounded-2xl border border-[var(--border-color)] w-full"></video>}
         {tallk.voiceNoteUrl && <VoiceNotePlayer src={tallk.voiceNoteUrl} />}
         {tallk.product && <ProductCard product={tallk.product} />}
         {tallk.poll && <PollDisplay poll={tallk.poll} />}
@@ -195,11 +243,19 @@ const TallkPost: React.FC<TallkPostProps> = ({ tallk, onNavigate, isBookmarked, 
         <div className="flex justify-between mt-4 max-w-md text-[var(--text-secondary)]">
            <ActionButton icon={<ReplyIcon/>} count={tallk.replies.length} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-sky-500 text-sky-500" onClick={handleReplyClick} />
            <ActionButton icon={<RetallkIcon/>} count={tallk.retallks} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-green-500 text-green-500" />
-           <ActionButton icon={<LikeIcon className={isLiked ? 'text-pink-500 fill-current' : ''}/>} count={likeCount} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-pink-500 text-pink-500" onClick={handleLike} isActive={isLiked} />
+           <ActionButton icon={<QuoteIcon/>} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-blue-500 text-blue-500" onClick={handleQuoteClick} />
+           <ActionButton icon={<LikeIcon className={isLiked ? 'text-pink-500 fill-current' : ''}/>} count={tallk.likes} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-pink-500 text-pink-500" onClick={handleLike} isActive={isLiked} />
            <ActionButton icon={<AnalyticsIcon />} onClick={(e) => {e.stopPropagation(); onNavigate('analytics', tallk)}} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-sky-500 text-sky-500" />
            <div className="flex items-center">
             <ActionButton icon={isBookmarked ? <BookmarkFillIcon className="text-yellow-500"/> : <BookmarkIcon/>} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-yellow-500 text-yellow-500" onClick={handleBookmark} isActive={isBookmarked} />
-            <ActionButton icon={<ShareIcon/>} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-sky-500 text-sky-500" />
+             <ActionButton icon={<ShareIcon/>} colorClass="text-[var(--text-secondary)]" activeColorClass="bg-sky-500 text-sky-500" onClick={(e) => { e.stopPropagation(); setShowShareMenu(!showShareMenu); }}>
+                 {showShareMenu && (
+                    <div ref={shareMenuRef} className="absolute top-full mt-2 -right-10 w-60 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg shadow-lg z-20">
+                        <button onClick={(e) => {e.stopPropagation(); navigator.clipboard.writeText(`https://tallka.example.com/${tallk.author.username}/status/${tallk.id}`); alert('Link copied!'); setShowShareMenu(false);}} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><span>Copy Link</span></button>
+                        <button onClick={(e) => {e.stopPropagation(); alert('Embedding Tallk...'); setShowShareMenu(false);}} className="w-full text-left px-4 py-2 hover:bg-[var(--bg-secondary)] flex items-center space-x-2"><span>Embed Tallk</span></button>
+                    </div>
+                )}
+            </ActionButton>
            </div>
         </div>
       </div>

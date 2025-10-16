@@ -5,35 +5,46 @@ import { VerifiedBadgeIcon, CalendarIcon, MoreIcon, TipJarIcon } from './IconCom
 
 interface ProfilePageProps {
   user: User;
-  userTallks: Tallk[];
-  onNavigate: (page: 'profile' | 'tallkDetail', data?: User | Tallk) => void;
+  currentUser: User;
+  allTallks: Tallk[];
+  onNavigate: (page: 'profile' | 'tallkDetail' | 'analytics', data?: User | Tallk) => void;
   bookmarks: Set<string>;
   onToggleBookmark: (tallkId: string) => void;
   onReply: (tallk: Tallk) => void;
+  onQuote: (tallk: Tallk) => void;
+  onLike: (tallkId: string) => void;
+  onEditProfile: () => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, userTallks, onNavigate, bookmarks, onToggleBookmark, onReply }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, allTallks, onNavigate, bookmarks, onToggleBookmark, onReply, onQuote, onLike, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState<'tallks' | 'replies' | 'media' | 'likes'>('tallks');
   
+  const userTallks = useMemo(() => allTallks.filter(t => t.author.id === user.id), [allTallks, user.id]);
+
   const { pinnedTallk, otherTallks } = useMemo(() => {
     const pinned = userTallks.find(t => t.isPinned);
     const others = userTallks.filter(t => !t.isPinned);
     return { pinnedTallk: pinned, otherTallks: others };
   }, [userTallks]);
 
+  const likedTallks = useMemo(() => {
+    return allTallks.filter(t => user.likedTallkIds?.includes(t.id));
+  }, [allTallks, user.likedTallkIds])
+
   const filteredTallks = useMemo(() => {
     switch (activeTab) {
       case 'replies':
-        return otherTallks.filter(t => t.replies.length > 0); 
+        // A better implementation would be to fetch replies where user is the author
+        return otherTallks.filter(t => t.content.startsWith('@')); 
       case 'media':
         return otherTallks.filter(t => !!t.image || !!t.videoUrl);
       case 'likes':
-        return []; 
+        return likedTallks; 
       case 'tallks':
       default:
         return otherTallks;
     }
-  }, [activeTab, otherTallks]);
+  }, [activeTab, otherTallks, likedTallks]);
   
   const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
     <button onClick={onClick} className="flex-1 py-4 text-center hover:bg-[var(--bg-secondary)]/50 transition-colors duration-200">
@@ -59,10 +70,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, userTallks, onNavigate,
         </div>
         
         <div className="flex justify-end items-center p-4 border-b border-[var(--border-color)] space-x-2">
-            <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><MoreIcon /></button>
-            <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><TipJarIcon /></button>
-            <button className="bg-sky-500 text-white font-bold py-1.5 px-4 rounded-full">Subscribe</button>
-            <button className="border border-[var(--text-secondary)] text-white font-bold py-1.5 px-4 rounded-full">Follow</button>
+            {currentUser.id === user.id ? (
+                 <button onClick={onEditProfile} className="border border-[var(--text-secondary)] font-bold py-1.5 px-4 rounded-full hover:bg-[var(--bg-secondary)]">Edit profile</button>
+            ) : (
+                <>
+                    <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><MoreIcon /></button>
+                    <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><TipJarIcon /></button>
+                    <button className="bg-sky-500 text-white font-bold py-1.5 px-4 rounded-full">Subscribe</button>
+                    <button className="border border-[var(--text-secondary)] text-white font-bold py-1.5 px-4 rounded-full">Follow</button>
+                </>
+            )}
         </div>
 
         <div className="p-4 border-b border-[var(--border-color)]">
@@ -71,7 +88,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, userTallks, onNavigate,
             {user.isVerified && <VerifiedBadgeIcon className="w-6 h-6 text-sky-400" />}
           </div>
           <p className="text-[var(--text-secondary)]">@{user.username}</p>
-          {user.isProfessional && <p className="text-sm text-[var(--text-secondary)] mt-1">Professional Account</p>}
+          {user.isProfessional && <p className="text-sm text-sky-400 mt-1 cursor-pointer hover:underline" onClick={() => onNavigate('analytics', user)}>View professional tools</p>}
           <p className="mt-2">{user.bio}</p>
           <div className="flex space-x-4 mt-2 text-[var(--text-secondary)] text-sm flex-wrap">
             {user.location && <span className="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> {user.location}</span>}
@@ -92,11 +109,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, userTallks, onNavigate,
         </div>
 
         <div>
-          {pinnedTallk && (
-              <TallkPost key={pinnedTallk.id} tallk={pinnedTallk} onNavigate={onNavigate} isBookmarked={bookmarks.has(pinnedTallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} />
+          {activeTab === 'tallks' && pinnedTallk && (
+              <TallkPost key={pinnedTallk.id} tallk={pinnedTallk} currentUser={currentUser} onNavigate={onNavigate} isBookmarked={bookmarks.has(pinnedTallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} onQuote={onQuote} onLike={onLike} />
           )}
           {filteredTallks.map(tallk => (
-            <TallkPost key={tallk.id} tallk={tallk} onNavigate={onNavigate} isBookmarked={bookmarks.has(tallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} />
+            <TallkPost key={tallk.id} tallk={tallk} currentUser={currentUser} onNavigate={onNavigate} isBookmarked={bookmarks.has(tallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} onQuote={onQuote} onLike={onLike} />
           ))}
         </div>
       </div>
