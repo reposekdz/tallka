@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import type { Story } from '../types';
+import type { Story, User } from '../types';
 
 interface StoryViewerProps {
   isOpen: boolean;
@@ -7,44 +8,75 @@ interface StoryViewerProps {
   storyData: {
     stories: Story[];
     startIndex: number;
+    users: User[];
   };
 }
 
 const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData }) => {
-  const [currentIndex, setCurrentIndex] = useState(storyData.startIndex);
+  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [currentStoryInUser, setCurrentStoryInUser] = useState(0);
   const [progress, setProgress] = useState(0);
+
   const videoRef = useRef<HTMLVideoElement>(null);
-  {/* FIX: Changed useRef generic to be more explicit, which can solve overload resolution issues with some tooling. */}
-  // FIX: Corrected useRef generic from `number` to `number | undefined` to match its initial `undefined` value.
-  const timerRef = useRef<number | undefined>();
+  // FIX: Initialize timerRef to null for type safety.
+  const timerRef = useRef<number | null>(null);
 
-  const currentStory = storyData.stories[currentIndex];
+  const usersWithStories = storyData.users;
 
-  const goToNext = () => {
-    if (currentIndex < storyData.stories.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setProgress(0);
+  useEffect(() => {
+    if (isOpen) {
+        const initialStory = storyData.stories[storyData.startIndex];
+        const userIndex = usersWithStories.findIndex(u => u.id === initialStory.user.id);
+        const storyIndex = storyData.stories.filter(s => s.user.id === initialStory.user.id).findIndex(s => s.id === initialStory.id);
+        
+        setCurrentUserIndex(userIndex >= 0 ? userIndex : 0);
+        setCurrentStoryInUser(storyIndex >= 0 ? storyIndex : 0);
+    }
+  }, [isOpen, storyData.startIndex, storyData.stories, usersWithStories]);
+
+
+  const activeUserStories = storyData.stories.filter(s => s.user.id === usersWithStories[currentUserIndex]?.id);
+  const currentStory = activeUserStories[currentStoryInUser];
+
+  const goToNextStory = () => {
+    if (currentStoryInUser < activeUserStories.length - 1) {
+      setCurrentStoryInUser(currentStoryInUser + 1);
+    } else {
+      goToNextUser();
+    }
+  };
+
+  const goToPrevStory = () => {
+    if (currentStoryInUser > 0) {
+      setCurrentStoryInUser(currentStoryInUser - 1);
+    } else {
+      goToPrevUser();
+    }
+  };
+  
+  const goToNextUser = () => {
+    if (currentUserIndex < usersWithStories.length - 1) {
+      setCurrentUserIndex(currentUserIndex + 1);
+      setCurrentStoryInUser(0);
     } else {
       onClose();
     }
   };
 
-  const goToPrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setProgress(0);
+  const goToPrevUser = () => {
+    if (currentUserIndex > 0) {
+      setCurrentUserIndex(currentUserIndex - 1);
+      setCurrentStoryInUser(0);
     }
   };
 
   useEffect(() => {
-    setCurrentIndex(storyData.startIndex);
-  }, [storyData.startIndex]);
-
-  useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !currentStory) return;
 
     setProgress(0);
-    clearInterval(timerRef.current);
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+    }
 
     if (currentStory.mediaType === 'image') {
       const duration = (currentStory.duration || 5) * 1000;
@@ -54,7 +86,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData })
         const newProgress = Math.min((elapsedTime / duration) * 100, 100);
         setProgress(newProgress);
         if (newProgress >= 100) {
-          goToNext();
+          goToNextStory();
         }
       }, 50);
     } else if (videoRef.current) {
@@ -62,8 +94,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData })
         videoRef.current.play().catch(e => console.error("Video play failed:", e));
     }
     
-    return () => clearInterval(timerRef.current);
-  }, [currentIndex, isOpen, storyData.stories]);
+    return () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+    }
+  }, [currentStoryInUser, currentUserIndex, isOpen, currentStory]);
   
    const handleVideoTimeUpdate = () => {
     if (videoRef.current) {
@@ -74,37 +110,46 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData })
     }
   };
 
+  if (!isOpen || !currentStory) return null;
 
-  if (!isOpen) return null;
+  const prevUser = usersWithStories[currentUserIndex - 1];
+  const nextUser = usersWithStories[currentUserIndex + 1];
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="relative w-full h-full max-w-md max-h-[95vh] aspect-[9/16] bg-slate-800 rounded-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center overflow-hidden" onClick={onClose}>
         
-        {/* Progress Bars */}
+        {/* Prev User card */}
+        {prevUser && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-pointer opacity-50 hover:opacity-100 transition-all duration-300" onClick={(e) => { e.stopPropagation(); goToPrevUser(); }}>
+                <div className="w-32 h-56 bg-slate-700 rounded-lg overflow-hidden">
+                    <img src={prevUser.avatar} className="w-full h-full object-cover" />
+                </div>
+            </div>
+        )}
+
+      <div className="relative w-full h-full max-w-sm max-h-[90vh] aspect-[9/16] bg-slate-800 rounded-lg overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+        
         <div className="absolute top-2 left-2 right-2 flex space-x-1 z-20">
-            {storyData.stories.map((story, index) => (
+            {activeUserStories.map((story, index) => (
                 <div key={story.id} className="h-1 flex-1 bg-white/30 rounded-full">
                     <div 
-                        className="h-full bg-white rounded-full" 
-                        style={{ width: `${index < currentIndex ? 100 : (index === currentIndex ? progress : 0)}%` }}
+                        className="h-full bg-white rounded-full transition-all duration-100" 
+                        style={{ width: `${index < currentStoryInUser ? 100 : (index === currentStoryInUser ? progress : 0)}%` }}
                     />
                 </div>
             ))}
         </div>
 
-        {/* Header */}
         <div className="absolute top-5 left-4 right-4 flex items-center justify-between z-20">
             <div className="flex items-center space-x-2">
                 <img src={currentStory.user.avatar} className="w-8 h-8 rounded-full" />
                 <span className="font-bold text-white text-sm">{currentStory.user.username}</span>
             </div>
-            <button onClick={onClose} className="text-white">
+            <button onClick={onClose} className="text-white p-1 rounded-full hover:bg-white/20">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
         
-        {/* Content */}
         {currentStory.mediaType === 'image' ? (
              <img src={currentStory.mediaUrl} className="w-full h-full object-cover" />
         ) : (
@@ -113,18 +158,26 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData })
                 src={currentStory.mediaUrl} 
                 className="w-full h-full object-cover" 
                 onTimeUpdate={handleVideoTimeUpdate}
-                onEnded={goToNext}
+                onEnded={goToNextStory}
                 playsInline
                 autoPlay
             />
         )}
 
-        {/* Navigation */}
         <div className="absolute inset-0 flex justify-between z-10">
-            <div className="w-1/3 h-full" onClick={goToPrev}></div>
-            <div className="w-1/3 h-full" onClick={goToNext}></div>
+            <div className="w-1/3 h-full cursor-pointer" onClick={goToPrevStory}></div>
+            <div className="w-2/3 h-full cursor-pointer" onClick={goToNextStory}></div>
         </div>
       </div>
+       
+      {/* Next User card */}
+      {nextUser && (
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 cursor-pointer opacity-50 hover:opacity-100 transition-all duration-300" onClick={(e) => { e.stopPropagation(); goToNextUser(); }}>
+                <div className="w-32 h-56 bg-slate-700 rounded-lg overflow-hidden">
+                    <img src={nextUser.avatar} className="w-full h-full object-cover" />
+                </div>
+            </div>
+        )}
     </div>
   );
 };

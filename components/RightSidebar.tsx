@@ -1,11 +1,28 @@
 import React from 'react';
 import { mockTrends, usersToFollow } from '../data/mockData';
 import { MoreIcon } from './IconComponents';
-import type { User } from '../types';
+import type { User, Trend } from '../types';
 
 interface RightSidebarProps {
   onNavigate: (page: 'profile', user: User) => void;
 }
+
+const TrendCard: React.FC<{ trend: Trend }> = ({ trend }) => (
+    <div 
+        className="relative h-24 rounded-2xl overflow-hidden cursor-pointer group p-3 flex flex-col justify-end"
+    >
+        <div 
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+            style={{ backgroundImage: `url(${trend.image})` }}
+        ></div>
+        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="relative z-10 text-white">
+            <p className="text-xs">Trending</p>
+            <p className="font-bold text-sm leading-tight">{trend.name}</p>
+            <p className="text-xs text-gray-300">{trend.tallks}</p>
+        </div>
+    </div>
+);
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
   return (
@@ -14,23 +31,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
         <input
           type="text"
           placeholder="Search Tallka"
-          className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-full px-4 py-2 placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-full px-4 py-2 placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <div className="bg-[var(--bg-secondary)] rounded-xl mt-4">
-          <h2 className="text-xl font-bold p-4">Trends for you</h2>
-          {mockTrends.map((trend, index) => (
-            <div key={index} className="p-4 hover:bg-[var(--bg-secondary)]/50 transition-colors duration-200 cursor-pointer">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-[var(--text-secondary)]">Trending</p>
-                  <p className="font-bold">{trend.name}</p>
-                  <p className="text-sm text-[var(--text-secondary)]">{trend.tallks}</p>
-                </div>
-                <MoreIcon className="w-5 h-5 text-[var(--text-secondary)]" />
-              </div>
-            </div>
-          ))}
-           <div className="p-4 text-sky-500 hover:bg-[var(--bg-secondary)]/50 rounded-b-xl cursor-pointer">Show more</div>
+        <div className="bg-[var(--bg-secondary)] rounded-xl mt-4 p-4">
+          <h2 className="text-xl font-bold mb-4">Trends for you</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {mockTrends.map((trend, index) => (
+              <TrendCard key={index} trend={trend} />
+            ))}
+          </div>
+           <div className="pt-4 text-blue-500 hover:bg-[var(--bg-secondary)]/50 rounded-b-xl cursor-pointer">Show more</div>
         </div>
 
         <div className="bg-[var(--bg-secondary)] rounded-xl mt-4">
@@ -44,10 +54,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
                   <p className="text-[var(--text-secondary)]">@{user.username}</p>
                 </div>
               </div>
-              <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full">Follow</button>
+              <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full hover:bg-gray-200 transition-colors">Follow</button>
             </div>
           ))}
-          <div className="p-4 text-sky-500 hover:bg-[var(--bg-secondary)]/50 rounded-b-xl cursor-pointer">Show more</div>
+          <div className="p-4 text-blue-500 hover:bg-[var(--bg-secondary)]/50 rounded-b-xl cursor-pointer">Show more</div>
         </div>
       </div>
     </aside>

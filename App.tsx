@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -19,8 +20,8 @@ import StoryViewer from './components/StoryViewer';
 import Modal from './components/Modal';
 import TallkComposer from './components/TallkComposer';
 import EditProfileModal from './components/EditProfileModal';
-import type { User, Tallk, Story } from './types';
-import { mockUser, anotherUser, mockTallks, mockStories } from './data/mockData';
+import type { User, Tallk, Story, UserList } from './types';
+import { mockUser, mockTallks, mockStories, mockLists } from './data/mockData';
 
 type Page = 
   | 'home' | 'explore' | 'notifications' | 'messages' | 'profile' | 'bookmarks' 
@@ -36,9 +37,10 @@ const App: React.FC = () => {
   const [tallks, setTallks] = useState<Tallk[]>(mockTallks);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [isStoryViewerOpen, setStoryViewerOpen] = useState(false);
-  const [storyData, setStoryData] = useState<{ stories: Story[], startIndex: number }>({ stories: [], startIndex: 0 });
+  const [storyData, setStoryData] = useState<{ stories: Story[], startIndex: number, users: User[] }>({ stories: [], startIndex: 0, users: [] });
   const [modalContent, setModalContent] = useState<ModalContent>(null);
   const [modalData, setModalData] = useState<any>(null);
+  const [userLists, setUserLists] = useState<UserList[]>(mockLists);
 
   const handleNavigate = (page: Page, data?: any) => {
     setCurrentPage(page);
@@ -96,8 +98,20 @@ const App: React.FC = () => {
       console.log(`Liked tallk ${tallkId}`);
   };
 
-  const openStory = (stories: Story[], startIndex: number) => {
-    setStoryData({ stories, startIndex });
+  const handleToggleFollow = (userIdToToggle: string) => {
+    setCurrentUser(prevUser => {
+        const newFollowingIds = new Set(prevUser.followingIds);
+        if (newFollowingIds.has(userIdToToggle)) {
+            newFollowingIds.delete(userIdToToggle);
+        } else {
+            newFollowingIds.add(userIdToToggle);
+        }
+        return { ...prevUser, followingIds: newFollowingIds };
+    });
+  };
+
+  const openStory = (stories: Story[], startIndex: number, users: User[]) => {
+    setStoryData({ stories, startIndex, users });
     setStoryViewerOpen(true);
   };
 
@@ -123,7 +137,7 @@ const App: React.FC = () => {
       case 'home':
         return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePostTallk} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onOpenStory={openStory}/>;
       case 'profile':
-        return <ProfilePage user={pageData || currentUser} tallks={tallks} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onEditProfile={() => openModal('editProfile')} />;
+        return <ProfilePage user={pageData || currentUser} tallks={tallks} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onEditProfile={() => openModal('editProfile')} onToggleFollow={handleToggleFollow} />;
       case 'tallkDetail':
         return <TallkDetailPage tallk={pageData} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onPostReply={handlePostReply}/>;
        case 'analytics':
@@ -137,7 +151,7 @@ const App: React.FC = () => {
       case 'spaces': return <SpacesPage />;
       case 'premium': return <PremiumPage />;
       case 'settings': return <SettingsPage />;
-      case 'lists': return <ListsPage onNavigate={handleNavigate} />;
+      case 'lists': return <ListsPage onNavigate={handleNavigate} userLists={userLists} tallks={tallks} currentUser={currentUser} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply',t)} onQuote={(t) => openModal('quote',t)} onLike={handleLike} />;
       case 'moments': return <MomentsPage onNavigate={handleNavigate}/>;
       default:
         return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePostTallk} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onOpenStory={openStory} />;
@@ -162,6 +176,12 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen">
+       <style>{`
+        .fb-bg-blue { background-color: #1877F2; }
+        .fb-text-blue { color: #1877F2; }
+        .fb-border-blue { border-color: #1877F2; }
+        .fb-hover-bg-blue:hover { background-color: #166FE5; }
+       `}</style>
       <div className="container mx-auto flex">
         <Sidebar 
           currentUser={currentUser} 

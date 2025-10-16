@@ -1,4 +1,6 @@
-import type { User, Tallk, Story, Trend, Community, UserList, Moment, Notification, Conversation, Space } from '../types';
+
+// FIX: Corrected type imports to resolve circular dependency and added missing Message type.
+import type { User, Tallk, Story, Trend, Community, UserList, Moment, Notification, Conversation, Space, Message } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -14,6 +16,7 @@ export const mockUser: User = {
   banner: 'https://picsum.photos/seed/u1-banner/1500/500',
   hasActiveStory: true,
   verified: true,
+  followingIds: new Set(['u2', 'follow2']), // Now following Jane Doe and AI Art
 };
 
 export const anotherUser: User = {
@@ -29,6 +32,7 @@ export const anotherUser: User = {
   website: 'janedoe.design',
   banner: 'https://picsum.photos/seed/u2-banner/1500/500',
   hasActiveStory: true,
+  followingIds: new Set(['u1', 'u3']),
 };
 
 export const thirdUser: User = {
@@ -42,14 +46,15 @@ export const thirdUser: User = {
   bio: 'Exploring the world one step at a time.',
   location: 'London, UK',
   banner: 'https://picsum.photos/seed/u3-banner/1500/500',
+  followingIds: new Set(['u1']),
 };
 
 export const mockUsers: User[] = [mockUser, anotherUser, thirdUser];
 
 export const usersToFollow: User[] = [
-    { ...thirdUser, id: 'follow1', username: 'johnsmith_new', avatar: 'https://i.pravatar.cc/150?u=follow1'},
-    { ...anotherUser, id: 'follow2', name: 'AI Art', username: 'ai_art_daily', avatar: 'https://i.pravatar.cc/150?u=follow2', bio: 'Daily AI-generated art.'},
-    { ...mockUser, id: 'follow3', name: 'React News', username: 'react_news', avatar: 'https://i.pravatar.cc/150?u=follow3', bio: 'Latest news about React and its ecosystem.'}
+    { ...thirdUser, id: 'follow1', username: 'johnsmith_new', avatar: 'https://i.pravatar.cc/150?u=follow1', followingIds: new Set()},
+    { ...anotherUser, id: 'follow2', name: 'AI Art', username: 'ai_art_daily', avatar: 'https://i.pravatar.cc/150?u=follow2', bio: 'Daily AI-generated art.', followingIds: new Set()},
+    { ...mockUser, id: 'follow3', name: 'React News', username: 'react_news', avatar: 'https://i.pravatar.cc/150?u=follow3', bio: 'Latest news about React and its ecosystem.', followingIds: new Set()}
 ];
 
 const reply1: Tallk = {
@@ -128,10 +133,10 @@ export const promotedTallk: Tallk = {
 };
 
 export const mockTrends: Trend[] = [
-  { name: '#ReactConf2024', tallks: '12.5K Tallks' },
-  { name: 'Gemini API', tallks: '8,765 Tallks' },
-  { name: 'TailwindCSS', tallks: '5,123 Tallks' },
-  { name: '#WebDev', tallks: '22K Tallks' },
+  { name: '#ReactConf2024', tallks: '12.5K Tallks', image: 'https://picsum.photos/seed/trend1/200/100' },
+  { name: 'Gemini API', tallks: '8,765 Tallks', image: 'https://picsum.photos/seed/trend2/200/100' },
+  { name: 'TailwindCSS', tallks: '5,123 Tallks', image: 'https://picsum.photos/seed/trend3/200/100' },
+  { name: '#WebDev', tallks: '22K Tallks', image: 'https://picsum.photos/seed/trend4/200/100' },
 ];
 
 export const mockStories: Story[] = [
@@ -147,8 +152,8 @@ export const mockCommunities: Community[] = [
 ];
 
 export const mockLists: UserList[] = [
-    { id: 'l1', name: 'Tech Peeps', description: 'People I follow for tech news and insights.', members: [anotherUser, thirdUser] },
-    { id: 'l2', name: 'Design Inspirations', description: 'Amazing designers to follow.', members: [anotherUser] },
+    { id: 'l1', name: 'Tech Peeps', description: 'People I follow for tech news and insights.', members: [anotherUser, thirdUser], owner: mockUser },
+    { id: 'l2', name: 'Design Inspirations', description: 'Amazing designers to follow.', members: [anotherUser], owner: mockUser },
 ];
 
 export const mockMoments: Moment[] = [
