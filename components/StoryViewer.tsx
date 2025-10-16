@@ -15,6 +15,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, storyData })
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   {/* FIX: Changed useRef generic to be more explicit, which can solve overload resolution issues with some tooling. */}
+  // FIX: Corrected useRef generic from `number` to `number | undefined` to match its initial `undefined` value.
   const timerRef = useRef<number | undefined>();
 
   const currentStory = storyData.stories[currentIndex];

@@ -1,315 +1,181 @@
-import type { User, Tallk, Notification, Community, Space, Conversation, Message, UserList, Moment, Story } from '../types';
+import type { User, Tallk, Story, Trend, Community, UserList, Moment, Notification, Conversation, Space } from '../types';
 
-export const user1: User = {
+export const mockUser: User = {
   id: 'u1',
   name: 'Kigali Coder',
   username: 'kigalicoder',
-  avatar: 'https://picsum.photos/seed/user1/200/200',
-  banner: 'https://picsum.photos/seed/banner1/1500/500',
-  bio: 'Passionate React developer from Rwanda 🇷🇼. Building cool things with TypeScript and Tailwind CSS.',
-  location: 'Kigali, Rwanda',
-  website: 'github.com',
-  birthday: '1995-05-15',
+  avatar: 'https://i.pravatar.cc/150?u=u1',
   following: 150,
-  followers: 1200,
-  isVerified: false,
-  isProfessional: true,
-  likedTallkIds: ['t-video', 't-poll'],
+  followers: 2500,
+  joinedDate: 'Joined July 2021',
+  bio: 'Just a coder from Kigali. Building things for the web. Follow for tech and random thoughts.',
+  location: 'Kigali, Rwanda',
+  website: 'kigalicoder.dev',
+  banner: 'https://picsum.photos/seed/u1-banner/1500/500',
+  hasActiveStory: true,
+  verified: true,
 };
 
-export const user2: User = {
+export const anotherUser: User = {
   id: 'u2',
   name: 'Jane Doe',
   username: 'janedoe',
-  avatar: 'https://picsum.photos/seed/user2/200/200',
-  banner: 'https://picsum.photos/seed/banner2/1500/500',
-  bio: 'UX/UI Designer crafting beautiful and intuitive digital experiences.',
-  location: 'Nairobi, Kenya',
-  website: 'dribbble.com',
-  birthday: '1998-11-20',
+  avatar: 'https://i.pravatar.cc/150?u=u2',
   following: 300,
-  followers: 5400,
-  isVerified: false,
+  followers: 5000,
+  joinedDate: 'Joined May 2020',
+  bio: 'Design enthusiast and coffee lover.',
+  location: 'San Francisco, CA',
+  website: 'janedoe.design',
+  banner: 'https://picsum.photos/seed/u2-banner/1500/500',
   hasActiveStory: true,
-  likedTallkIds: ['t-pinned', 't-shop'],
 };
+
+export const thirdUser: User = {
+  id: 'u3',
+  name: 'John Smith',
+  username: 'johnsmith',
+  avatar: 'https://i.pravatar.cc/150?u=u3',
+  following: 50,
+  followers: 100,
+  joinedDate: 'Joined January 2022',
+  bio: 'Exploring the world one step at a time.',
+  location: 'London, UK',
+  banner: 'https://picsum.photos/seed/u3-banner/1500/500',
+};
+
+export const mockUsers: User[] = [mockUser, anotherUser, thirdUser];
 
 export const usersToFollow: User[] = [
-    {
-        id: 'u3',
-        name: 'Tech Enthusiast',
-        username: 'techenthusiast',
-        avatar: 'https://picsum.photos/seed/user3/200/200',
-        following: 50,
-        followers: 10000,
-        isVerified: false,
-        likedTallkIds: [],
-    },
-    {
-        id: 'u4',
-        name: 'React News',
-        username: 'reactnews',
-        avatar: 'https://picsum.photos/seed/user4/200/200',
-        following: 1,
-        followers: 250000,
-        isVerified: true,
-        isProfessional: true,
-        hasActiveStory: true,
-        likedTallkIds: [],
-    },
-    {
-        id: 'u5',
-        name: 'Rwandan Explorer',
-        username: 'rwandanexplorer',
-        avatar: 'https://picsum.photos/seed/user5/200/200',
-        following: 500,
-        followers: 8500,
-        isVerified: false,
-        likedTallkIds: [],
-    }
+    { ...thirdUser, id: 'follow1', username: 'johnsmith_new', avatar: 'https://i.pravatar.cc/150?u=follow1'},
+    { ...anotherUser, id: 'follow2', name: 'AI Art', username: 'ai_art_daily', avatar: 'https://i.pravatar.cc/150?u=follow2', bio: 'Daily AI-generated art.'},
+    { ...mockUser, id: 'follow3', name: 'React News', username: 'react_news', avatar: 'https://i.pravatar.cc/150?u=follow3', bio: 'Latest news about React and its ecosystem.'}
 ];
 
-export const mockUsers: User[] = [user1, user2, ...usersToFollow];
-export const mockUser = user1; // Default user
-export const anotherUser = user2;
-
-
-const mockReplies: Tallk[] = [
-    {
-        id: 'tr1',
-        author: mockUser,
-        content: "Totally agree! It's a fantastic tool for designers.",
-        createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
-        likes: 15,
-        retallks: 2,
-        replies: [
-             {
-                id: 'tr1-1',
-                author: usersToFollow[0],
-                content: "Indeed! The component system is very intuitive.",
-                createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
-                likes: 5,
-                retallks: 0,
-                replies: [],
-            }
-        ],
-    },
-    {
-        id: 'tr2',
-        author: usersToFollow[0],
-        content: "This is a game changer! Downloading now.",
-        createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
-        likes: 8,
-        retallks: 1,
-        replies: [],
-    }
-];
-
-export const promotedTallk: Tallk = {
-    id: 'promo1',
-    author: {
-        id: 'promo-user',
-        name: 'Tallka Ads',
-        username: 'tallkaads',
-        avatar: 'https://picsum.photos/seed/ad/200/200',
-        following: 0,
-        followers: 0,
-        isVerified: true,
-    },
-    content: "Launch your brand into the stratosphere with Tallka Ads. Reach millions of engaged users and grow your business today. Click to learn more!",
-    image: 'https://picsum.photos/seed/promo-img/600/400',
-    createdAt: new Date().toISOString(),
-    likes: 500,
-    retallks: 120,
-    replies: [],
+const reply1: Tallk = {
+  id: 't1-r1',
+  author: anotherUser,
+  content: 'Looks amazing! What tools did you use?',
+  timestamp: '2h',
+  likes: 15,
+  retallks: 2,
+  replies: []
 };
-
+const reply2: Tallk = {
+  id: 't1-r2',
+  author: thirdUser,
+  content: 'Wow, incredible work! So inspiring.',
+  timestamp: '1h',
+  likes: 8,
+  retallks: 1,
+  replies: []
+};
+const reply3: Tallk = {
+  id: 't1-r3',
+  author: mockUser,
+  content: 'Thanks! I used Figma for the design and React for the implementation.',
+  timestamp: '30m',
+  likes: 25,
+  retallks: 5,
+  replies: []
+};
 
 export const mockTallks: Tallk[] = [
   {
-    id: 't-pinned',
-    author: mockUser,
-    content: "Excited to announce I'll be speaking at #DevConAfrica next month! Come say hi if you're there. I'll be talking about the future of frontend development. #WebDev",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    likes: 582,
-    retallks: 120,
-    replies: [],
-    isPinned: true,
-  },
-   {
-    id: 't-video',
-    author: usersToFollow[2],
-    content: "A breathtaking view of the Nyungwe National Park canopy walk. The beauty of Rwanda is endless. #VisitRwanda 🇷🇼",
-    videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-    likes: 789,
-    retallks: 210,
-    replies: [],
-  },
-  {
     id: 't1',
-    author: anotherUser,
-    content: "Just launched a new UI kit for Figma! So excited to see what you all create with it. Check it out! #UI #Design #Figma @kigalicoder",
+    author: mockUser,
+    content: 'Just launched my new project! It\'s a social media app for developers called Tallka. Check it out and let me know what you think! #webdev #react #typescript',
     image: 'https://picsum.photos/seed/tallk1/600/400',
-    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-    likes: 125,
-    retallks: 45,
-    replies: mockReplies,
+    timestamp: '4h',
+    likes: 156,
+    retallks: 32,
+    replies: [reply1, reply2, reply3]
   },
   {
-    id: 't-shop',
-    author: usersToFollow[1],
-    content: "Introducing the official React 19 merch! Get your exclusive T-shirts and mugs now. Limited stock available.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-    likes: 950,
-    retallks: 320,
-    replies: [],
-    product: {
-      name: 'React 19 Official Tee',
-      price: '$29.99',
-      imageUrl: 'https://picsum.photos/seed/product1/600/400',
-      storeUrl: '#',
-    }
-  },
-  {
-    id: 't-poll',
-    author: usersToFollow[0],
-    content: "What's your favorite state management library in React for large-scale applications?",
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    likes: 320,
-    retallks: 90,
-    replies: [],
-    poll: {
-        options: [
-            { label: 'Redux Toolkit', votes: 150 },
-            { label: 'Zustand', votes: 280 },
-            { label: 'Jotai / Recoil', votes: 120 },
-            { label: 'Context API', votes: 80 }
-        ],
-        totalVotes: 630
-    }
-  },
-   {
-    id: 't-thread-1',
-    author: mockUser,
-    content: "Building this Tallka app is a great learning experience. Loving the combination of React and Tailwind CSS for rapid prototyping! 🚀 #ReactJS #TailwindCSS (1/2)",
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    likes: 88,
-    retallks: 12,
-    replies: [],
-    threadId: 'thread1',
-  },
-  {
-    id: 't-thread-2',
-    author: mockUser,
-    content: "The component-based architecture of React makes it so scalable, and Tailwind's utility-first approach is a game-changer for styling. Highly recommend this stack! (2/2)",
-    createdAt: new Date(Date.now() - 1000 * 60 * 29).toISOString(),
-    likes: 45,
-    retallks: 5,
-    replies: [],
-    threadId: 'thread1',
-  },
-  {
-    id: 't-quote',
-    author: mockUser,
-    content: "This is huge for the React ecosystem!",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
-    likes: 42,
-    retallks: 8,
-    replies: [],
-    quoteOf: {
-      id: 't3',
-      author: usersToFollow[1],
-      content: "React 19 is just around the corner! Who's excited for the new compiler and automatic memoization features?",
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      likes: 1200,
-      retallks: 450,
-      replies: [],
-    }
-  },
-  {
-    id: 't-voice',
+    id: 't2',
     author: anotherUser,
-    content: "Just had a quick thought on design systems...",
-    voiceNoteUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-    likes: 95,
+    content: 'The importance of good UX design cannot be overstated. A beautiful UI is useless if the user can\'t figure out how to use it.',
+    timestamp: '8h',
+    likes: 543,
+    retallks: 128,
+    replies: []
+  },
+  {
+    id: 't3',
+    author: thirdUser,
+    content: 'Exploring the beautiful landscapes of New Zealand. #travel #nature',
+    image: 'https://picsum.photos/seed/tallk3/600/400',
+    timestamp: '1d',
+    likes: 1024,
+    retallks: 256,
+    replies: []
+  },
+  {
+    id: 't4',
+    author: mockUser,
+    content: 'Just a quick thought: the Gemini API is incredibly powerful for adding intelligent features to apps. I\'m experimenting with a "summarize thread" feature.',
+    timestamp: '2d',
+    likes: 98,
     retallks: 15,
-    replies: [],
+    replies: []
   },
 ];
 
+export const promotedTallk: Tallk = {
+    ...mockTallks[2],
+    id: 'promo1',
+    isPromoted: true,
+};
 
-export const mockNotifications: Notification[] = [
-    { id: 'n1', type: 'follow', user: anotherUser, createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString() },
-    { id: 'n2', type: 'like', user: usersToFollow[0], tallk: mockTallks[1], createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString() },
-    { id: 'n6', type: 'quote', user: mockUser, tallk: mockTallks[3], createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString() },
-    { id: 'n5', type: 'mention', user: anotherUser, tallk: mockTallks[0], createdAt: new Date(Date.now() - 1000 * 60 * 40).toISOString() },
-    { id: 'n3', type: 'retallk', user: usersToFollow[1], tallk: mockTallks[1], createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString() },
-    { id: 'n4', type: 'reply', user: anotherUser, tallk: mockTallks[1], createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-];
-
-export const mockTrends = [
-    { name: '#Kigali', tallks: '12.5K Tallks' },
-    { name: '#VisitRwanda', tallks: '8,9K Tallks' },
-    { name: '#ReactJS', tallks: '125K Tallks' },
-    { name: 'TailwindCSS', tallks: '78K Tallks' },
-    { name: '#TechInAfrica', tallks: '5,2K Tallks' },
-];
-
-export const mockCommunities: Community[] = [
-    { id: 'c1', name: 'React Developers', banner: 'https://picsum.photos/seed/comm1/600/200', description: 'A community for all things React. Share your projects, ask questions, and connect with other developers.', members: 125000 },
-    { id: 'c2', name: 'UI/UX Designers of Africa', banner: 'https://picsum.photos/seed/comm2/600/200', description: 'Connecting designers across the continent to share inspiration, resources, and opportunities.', members: 45000 },
-    { id: 'c3', name: 'Rwanda Photography', banner: 'https://picsum.photos/seed/comm3/600/200', description: 'Showcasing the beauty of Rwanda through the lens of local and international photographers.', members: 12000 },
-];
-
-export const mockSpaces: Space[] = [
-    { id: 's1', title: 'Live from #DevConAfrica: The Future of Frontend', hosts: [usersToFollow[1]], speakers: [mockUser], listeners: 1200, tags: ['React', 'Frontend', 'Tech'] },
-    { id: 's2', title: 'Chill Friday: Tech Chat & Music', hosts: [mockUser, anotherUser], listeners: 350, tags: ['Tech', 'Community'] },
-    { id: 's3', title: 'Startup Pitch Night', hosts: [usersToFollow[0]], listeners: 890, tags: ['Startups', 'VC', 'Business'], isRecorded: true },
-];
-
-export const mockConversations: Conversation[] = [
-    {
-        id: 'conv1',
-        participants: [mockUser, anotherUser],
-        messages: [
-            { id: 'm1', sender: anotherUser, text: 'Hey! Loved your recent tallk on Tailwind. Great insights!', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()},
-            { id: 'm2', sender: mockUser, text: 'Thanks so much! Glad you enjoyed it. Your new UI kit looks amazing too!', timestamp: new Date(Date.now() - 1000 * 60 * 58).toISOString()},
-            { id: 'm2-voice', sender: anotherUser, text: '', voiceMessageUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', timestamp: new Date(Date.now() - 1000 * 60 * 55).toISOString()}
-        ]
-    },
-    {
-        id: 'conv2',
-        participants: [mockUser, usersToFollow[2]],
-        messages: [
-            { id: 'm3', sender: usersToFollow[2], text: 'That photo of Lake Kivu is stunning!', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()},
-        ]
-    },
-    {
-        id: 'conv3',
-        participants: [mockUser, anotherUser, usersToFollow[0]],
-        isGroup: true,
-        groupName: 'Project Team',
-        groupAvatar: 'https://picsum.photos/seed/group1/200/200',
-        messages: [
-             { id: 'm4', sender: usersToFollow[0], text: 'Hey team, how is the project going?', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()},
-             { id: 'm5', sender: mockUser, text: 'Making good progress! Should have an update soon.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString()},
-        ]
-    }
-];
-
-export const mockLists: UserList[] = [
-    { id: 'l1', name: 'Dev Relations', description: 'People in devrel and community', members: [anotherUser, usersToFollow[0]], isPrivate: false},
-    { id: 'l2', name: 'Design Inspirations', description: '', members: [anotherUser], isPrivate: true },
-];
-
-export const mockMoments: Moment[] = [
-    { id: 'm1', title: 'Highlights from the #TechInAfrica Summit', description: 'The best moments and insights from this year\'s biggest tech event in Africa.', coverImage: 'https://picsum.photos/seed/moment1/600/800', tallks: [mockTallks[0], mockTallks[4]] }
+export const mockTrends: Trend[] = [
+  { name: '#ReactConf2024', tallks: '12.5K Tallks' },
+  { name: 'Gemini API', tallks: '8,765 Tallks' },
+  { name: 'TailwindCSS', tallks: '5,123 Tallks' },
+  { name: '#WebDev', tallks: '22K Tallks' },
 ];
 
 export const mockStories: Story[] = [
-    { id: 'story1', user: anotherUser, mediaUrl: 'https://picsum.photos/seed/story1/1080/1920', mediaType: 'image', duration: 5 },
-    { id: 'story2', user: anotherUser, mediaUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4', mediaType: 'video', duration: 10 },
-    { id: 'story3', user: usersToFollow[1], mediaUrl: 'https://picsum.photos/seed/story2/1080/1920', mediaType: 'image', duration: 5 },
+  { id: 's1', user: mockUser, mediaUrl: 'https://picsum.photos/seed/story1/450/800', mediaType: 'image', duration: 7, timestamp: '2h' },
+  { id: 's2', user: mockUser, mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', mediaType: 'video', timestamp: '1h' },
+  { id: 's3', user: anotherUser, mediaUrl: 'https://picsum.photos/seed/story3/450/800', mediaType: 'image', duration: 5, timestamp: '3h' },
+  { id: 's4', user: thirdUser, mediaUrl: 'https://picsum.photos/seed/story4/450/800', mediaType: 'image', duration: 6, timestamp: '5h' },
+];
+
+export const mockCommunities: Community[] = [
+  { id: 'c1', name: 'React Developers', description: 'A community for all things React. Share your projects, ask questions, and connect with other developers.', banner: 'https://picsum.photos/seed/comm1/1500/500', members: 125000 },
+  { id: 'c2', name: 'UI/UX Designers', description: 'Share your work, get feedback, and discuss the latest trends in UI/UX design.', banner: 'https://picsum.photos/seed/comm2/1500/500', members: 89000 },
+];
+
+export const mockLists: UserList[] = [
+    { id: 'l1', name: 'Tech Peeps', description: 'People I follow for tech news and insights.', members: [anotherUser, thirdUser] },
+    { id: 'l2', name: 'Design Inspirations', description: 'Amazing designers to follow.', members: [anotherUser] },
+];
+
+export const mockMoments: Moment[] = [
+    { id: 'm1', title: 'The Launch of Tallka', description: 'See the highlights from the launch of the new social media app for developers.', coverImage: 'https://picsum.photos/seed/moment1/600/800' },
+    { id: 'm2', title: 'A Trip to the Mountains', description: 'A collection of beautiful photos from a recent hiking trip.', coverImage: 'https://picsum.photos/seed/moment2/600/800' },
+];
+
+export const mockNotifications: Notification[] = [
+    { id: 'n1', type: 'like', user: anotherUser, tallk: mockTallks[0], timestamp: '2h' },
+    { id: 'n2', type: 'follow', user: thirdUser, timestamp: '5h' },
+    { id: 'n3', type: 'retallk', user: anotherUser, tallk: mockTallks[3], timestamp: '1d' },
+    { id: 'n4', type: 'reply', user: thirdUser, tallk: mockTallks[0], timestamp: '1d' },
+    { id: 'n5', type: 'mention', user: anotherUser, tallk: mockTallks[1], timestamp: '2d' },
+];
+
+const conversationMessages: Message[] = [
+    { id: 'msg1', sender: anotherUser, recipient: mockUser, text: 'Hey, saw your new project. Looks great!', timestamp: '10m' },
+    { id: 'msg2', sender: mockUser, recipient: anotherUser, text: 'Thanks so much! Appreciate you checking it out.', timestamp: '9m' },
+    { id: 'msg3', sender: anotherUser, recipient: mockUser, text: 'Of course! I had a quick question about the tech stack.', timestamp: '8m' },
+];
+
+export const mockConversations: Conversation[] = [
+    { id: 'conv1', participants: [mockUser, anotherUser], messages: conversationMessages, lastMessageTimestamp: '8m' },
+    { id: 'conv2', participants: [mockUser, thirdUser], messages: [{ id: 'msg4', sender: thirdUser, recipient: mockUser, text: 'Loved your photos from New Zealand!', timestamp: '1h' }], lastMessageTimestamp: '1h' },
+];
+
+export const mockSpaces: Space[] = [
+    { id: 'sp1', title: 'Tech Talk: The Future of Frontend', hosts: [mockUser], speakers: [anotherUser], listeners: [thirdUser], listenerCount: 125, isRecording: true },
+    { id: 'sp2', title: 'AMA with a Senior Designer', hosts: [anotherUser], speakers: [], listeners: [], listenerCount: 340, isRecording: false },
 ];

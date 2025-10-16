@@ -1,233 +1,183 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
 import Feed from './components/Feed';
-import ExplorePage from './components/ExplorePage';
-import NotificationsPage from './components/NotificationsPage';
 import ProfilePage from './components/ProfilePage';
-import MessagesPage from './components/MessagesPage';
-import CommunitiesPage from './components/CommunitiesPage';
-import SpacesPage from './components/SpacesPage';
 import BookmarksPage from './components/BookmarksPage';
+import CommunitiesPage from './components/CommunitiesPage';
+import ExplorePage from './components/ExplorePage';
+import ListsPage from './components/ListsPage';
+import MessagesPage from './components/MessagesPage';
+import MomentsPage from './components/MomentsPage';
+import NotificationsPage from './components/NotificationsPage';
 import PremiumPage from './components/PremiumPage';
 import SettingsPage from './components/SettingsPage';
-import ListsPage from './components/ListsPage';
-import MomentsPage from './components/MomentsPage';
-import AnalyticsPage from './components/AnalyticsPage';
+import SpacesPage from './components/SpacesPage';
 import TallkDetailPage from './components/TallkDetailPage';
-import Modal from './components/Modal';
+import AnalyticsPage from './components/AnalyticsPage';
 import StoryViewer from './components/StoryViewer';
-import EditProfileModal from './components/EditProfileModal';
+import Modal from './components/Modal';
 import TallkComposer from './components/TallkComposer';
-import { mockUsers, mockTallks, mockStories } from './data/mockData';
-import type { User, Tallk, Moment, Story } from './types';
+import EditProfileModal from './components/EditProfileModal';
+import type { User, Tallk, Story } from './types';
+import { mockUser, anotherUser, mockTallks, mockStories } from './data/mockData';
 
-type Page = 'home' | 'explore' | 'notifications' | 'messages' | 'profile' | 'bookmarks' | 'communities' | 'spaces' | 'premium' | 'settings' | 'lists' | 'moments' | 'analytics' | 'tallkDetail';
-type Theme = 'dim' | 'lights-out';
+type Page = 
+  | 'home' | 'explore' | 'notifications' | 'messages' | 'profile' | 'bookmarks' 
+  | 'communities' | 'spaces' | 'premium' | 'settings' | 'lists' | 'moments' 
+  | 'tallkDetail' | 'analytics';
+
+type ModalContent = 'compose' | 'reply' | 'quote' | 'editProfile' | null;
 
 const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User>(mockUser);
   const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [currentUser, setCurrentUser] = useState<User>(mockUsers[0]);
-  const [allUsers, setAllUsers] = useState<User[]>(mockUsers);
+  const [pageData, setPageData] = useState<any>(null);
   const [tallks, setTallks] = useState<Tallk[]>(mockTallks);
-  const [viewedProfile, setViewedProfile] = useState<User>(currentUser);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
-  const [viewedTallk, setViewedTallk] = useState<Tallk | null>(null);
-  
-  const [isComposerModalOpen, setComposerModalOpen] = useState(false);
-  const [isStoryModalOpen, setStoryModalOpen] = useState(false);
-  const [isEditProfileModalOpen, setEditProfileModalOpen] = useState(false);
-  const [viewedStories, setViewedStories] = useState<{stories: Story[], startIndex: number} | null>(null);
-  
-  const [replyingTo, setReplyingTo] = useState<Tallk | null>(null);
-  const [quoting, setQuoting] = useState<Tallk | null>(null);
-  const [theme, setTheme] = useState<Theme>('dim');
+  const [isStoryViewerOpen, setStoryViewerOpen] = useState(false);
+  const [storyData, setStoryData] = useState<{ stories: Story[], startIndex: number }>({ stories: [], startIndex: 0 });
+  const [modalContent, setModalContent] = useState<ModalContent>(null);
+  const [modalData, setModalData] = useState<any>(null);
 
-  useEffect(() => {
-    document.body.className = '';
-    document.body.classList.add(`theme-${theme}`);
-  }, [theme]);
-
-  const handleNavigate = useCallback((page: Page, data?: User | Tallk | Moment) => {
+  const handleNavigate = (page: Page, data?: any) => {
     setCurrentPage(page);
-    if (page === 'profile' && data && 'username' in data) {
-      setViewedProfile(data as User);
-    }
-    if ((page === 'analytics' || page === 'tallkDetail') && data && 'content' in data) {
-      setViewedTallk(data as Tallk);
-    }
+    setPageData(data);
     window.scrollTo(0, 0);
-  }, []);
-  
-  const handlePost = useCallback((content: string, image?: string, quoteOf?: Tallk) => {
-     const newTallk: Tallk = {
+  };
+
+  const handlePostTallk = (content: string, image?: string) => {
+    const newTallk: Tallk = {
       id: `t${Date.now()}`,
       author: currentUser,
       content,
       image,
-      quoteOf,
-      createdAt: new Date().toISOString(),
+      timestamp: 'Just now',
       likes: 0,
       retallks: 0,
       replies: [],
     };
-    setTallks(prevTallks => [newTallk, ...prevTallks]);
-    setComposerModalOpen(false);
-    setQuoting(null);
-  }, [currentUser]);
-
-  const handleReply = useCallback((content: string, parentTallkId: string) => {
-      const newReply: Tallk = {
-        id: `t${Date.now()}`,
-        author: currentUser,
-        content,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        retallks: 0,
-        replies: [],
-      };
-      const updateReplies = (tallkList: Tallk[]): Tallk[] => {
-          return tallkList.map(t => {
-              if (t.id === parentTallkId) {
-                  return {...t, replies: [newReply, ...t.replies]};
-              }
-              if (t.replies.length > 0) {
-                  return {...t, replies: updateReplies(t.replies)};
-              }
-              return t;
-          });
-      };
-      setTallks(prevTallks => updateReplies(prevTallks));
-      
-      if (viewedTallk) {
-          if(viewedTallk.id === parentTallkId) {
-            setViewedTallk(prev => prev ? {...prev, replies: [newReply, ...prev.replies]} : null);
-          } else {
-             const updatedReplies = updateReplies(viewedTallk.replies);
-             setViewedTallk(prev => prev ? {...prev, replies: updatedReplies} : null);
-          }
-      }
-
-      setComposerModalOpen(false);
-      setReplyingTo(null);
-  }, [currentUser, viewedTallk]);
-
-  const handleLike = useCallback((tallkId: string) => {
-    setTallks(prev => prev.map(t => t.id === tallkId ? {...t, likes: (currentUser.likedTallkIds?.includes(tallkId) ? t.likes - 1 : t.likes + 1)} : t));
-    setCurrentUser(prevUser => {
-        const newLikedIds = new Set(prevUser.likedTallkIds || []);
-        if(newLikedIds.has(tallkId)) {
-            newLikedIds.delete(tallkId);
-        } else {
-            newLikedIds.add(tallkId);
-        }
-        return {...prevUser, likedTallkIds: Array.from(newLikedIds)};
-    });
-  }, [currentUser.likedTallkIds]);
-
-  const handleToggleBookmark = useCallback((tallkId: string) => {
-    setBookmarks(prev => {
-      const newBookmarks = new Set(prev);
-      if (newBookmarks.has(tallkId)) newBookmarks.delete(tallkId);
-      else newBookmarks.add(tallkId);
-      return newBookmarks;
-    });
-  }, []);
-  
-  const openReplyModal = useCallback((tallk: Tallk) => {
-    setReplyingTo(tallk);
-    setQuoting(null);
-    setComposerModalOpen(true);
-  }, []);
-  
-  const openQuoteModal = useCallback((tallk: Tallk) => {
-    setQuoting(tallk);
-    setReplyingTo(null);
-    setComposerModalOpen(true);
-  }, []);
-  
-  const openComposerModal = useCallback(() => {
-    setReplyingTo(null);
-    setQuoting(null);
-    setComposerModalOpen(true);
-  }, []);
-
-  const handleOpenStory = useCallback((stories: Story[], startIndex: number) => {
-    setViewedStories({ stories, startIndex });
-    setStoryModalOpen(true);
-  }, []);
-
-  const handleSwitchAccount = (user: User) => {
-    setCurrentUser(user);
-    setViewedProfile(user);
-    if(currentPage === 'profile') {
-        handleNavigate('profile', user);
-    }
+    setTallks([newTallk, ...tallks]);
+    setModalContent(null);
   };
   
-  const handleUpdateProfile = (updatedUser: Partial<User>) => {
-    const updated = {...currentUser, ...updatedUser};
-    setCurrentUser(updated);
-    setAllUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
-    setViewedProfile(updated);
-    setEditProfileModalOpen(false);
-  }
+  const handlePostReply = (content: string, parentTallkId: string) => {
+    const newReply: Tallk = {
+      id: `t${Date.now()}`,
+      author: currentUser,
+      content,
+      timestamp: 'Just now',
+      likes: 0,
+      retallks: 0,
+      replies: [],
+    };
+    setTallks(prevTallks => prevTallks.map(tallk => 
+        tallk.id === parentTallkId 
+            ? { ...tallk, replies: [newReply, ...tallk.replies] } 
+            : tallk
+    ));
+    setModalContent(null);
+  };
 
-  const bookmarkedTallks = tallks.filter(t => bookmarks.has(t.id));
+  const handleToggleBookmark = (tallkId: string) => {
+    setBookmarks(prev => {
+      const newBookmarks = new Set(prev);
+      if (newBookmarks.has(tallkId)) {
+        newBookmarks.delete(tallkId);
+      } else {
+        newBookmarks.add(tallkId);
+      }
+      return newBookmarks;
+    });
+  };
+  
+  const handleLike = (tallkId: string) => {
+      // In a real app, this would update state and call an API
+      console.log(`Liked tallk ${tallkId}`);
+  };
 
-  const renderContent = () => {
+  const openStory = (stories: Story[], startIndex: number) => {
+    setStoryData({ stories, startIndex });
+    setStoryViewerOpen(true);
+  };
+
+  const openModal = (type: ModalContent, data?: any) => {
+      setModalData(data);
+      setModalContent(type);
+  };
+
+  const closeModal = () => {
+      setModalContent(null);
+      setModalData(null);
+  };
+
+  const handleSaveProfile = (updatedUser: Partial<User>) => {
+      setCurrentUser(prev => ({...prev, ...updatedUser}));
+      closeModal();
+  };
+  
+  const bookmarkedTallks = tallks.filter(tallk => bookmarks.has(tallk.id));
+
+  const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePost} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={openReplyModal} onQuote={openQuoteModal} onLike={handleLike} onOpenStory={handleOpenStory}/>;
-      case 'explore':
-        return <ExplorePage onNavigate={handleNavigate}/>;
-      case 'notifications':
-        return <NotificationsPage onNavigate={handleNavigate} />;
-      case 'messages':
-        return <MessagesPage onNavigate={handleNavigate} />;
-      case 'bookmarks':
-        return <BookmarksPage currentUser={currentUser} bookmarkedTallks={bookmarkedTallks} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={openReplyModal} onQuote={openQuoteModal} onLike={handleLike} />;
-      case 'communities':
-        return <CommunitiesPage />;
-      case 'spaces':
-        return <SpacesPage onNavigate={handleNavigate} />;
-      case 'premium':
-        return <PremiumPage />;
-      case 'settings':
-        return <SettingsPage currentTheme={theme} onThemeChange={setTheme} />;
-      case 'lists':
-        return <ListsPage onNavigate={handleNavigate}/>;
-      case 'moments':
-        return <MomentsPage onNavigate={handleNavigate}/>;
-      case 'analytics':
-        return viewedTallk ? <AnalyticsPage tallk={viewedTallk} onNavigate={handleNavigate} /> : <span>Tallk not found</span>;
-      case 'tallkDetail':
-        return viewedTallk ? <TallkDetailPage tallk={viewedTallk} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={openReplyModal} onQuote={openQuoteModal} onLike={handleLike} onPostReply={handleReply} /> : <span>Tallk not found</span>;
+        return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePostTallk} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onOpenStory={openStory}/>;
       case 'profile':
-        return <ProfilePage user={viewedProfile} currentUser={currentUser} allTallks={tallks} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={openReplyModal} onQuote={openQuoteModal} onLike={handleLike} onEditProfile={() => setEditProfileModalOpen(true)} />;
+        return <ProfilePage user={pageData || currentUser} tallks={tallks} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onEditProfile={() => openModal('editProfile')} />;
+      case 'tallkDetail':
+        return <TallkDetailPage tallk={pageData} currentUser={currentUser} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onPostReply={handlePostReply}/>;
+       case 'analytics':
+        return <AnalyticsPage tallk={pageData} onNavigate={handleNavigate} />;
+      case 'bookmarks':
+        return <BookmarksPage currentUser={currentUser} bookmarkedTallks={bookmarkedTallks} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike}/>;
+      case 'explore': return <ExplorePage />;
+      case 'notifications': return <NotificationsPage />;
+      case 'messages': return <MessagesPage />;
+      case 'communities': return <CommunitiesPage />;
+      case 'spaces': return <SpacesPage />;
+      case 'premium': return <PremiumPage />;
+      case 'settings': return <SettingsPage />;
+      case 'lists': return <ListsPage onNavigate={handleNavigate} />;
+      case 'moments': return <MomentsPage onNavigate={handleNavigate}/>;
       default:
-        return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePost} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={openReplyModal} onQuote={openQuoteModal} onLike={handleLike} onOpenStory={handleOpenStory}/>;
+        return <Feed tallks={tallks} currentUser={currentUser} onPostTallk={handlePostTallk} onNavigate={handleNavigate} bookmarks={bookmarks} onToggleBookmark={handleToggleBookmark} onReply={(t) => openModal('reply', t)} onQuote={(t) => openModal('quote', t)} onLike={handleLike} onOpenStory={openStory} />;
+    }
+  };
+
+  const renderModalContent = () => {
+    switch (modalContent) {
+        case 'compose':
+            return <TallkComposer currentUser={currentUser} onPostTallk={handlePostTallk} />;
+        case 'reply':
+            return <TallkComposer currentUser={currentUser} onPostTallk={(content) => handlePostReply(content, modalData.id)} replyingTo={modalData} />;
+        case 'quote':
+            // Quote could have its own component, but for now, we'll reuse composer
+            return <div><TallkComposer currentUser={currentUser} onPostTallk={handlePostTallk} /><div className="p-4 m-4 border rounded-xl">{modalData.content}</div></div>;
+        case 'editProfile':
+            return <EditProfileModal user={currentUser} onSave={handleSaveProfile} onClose={closeModal} />;
+        default:
+            return null;
     }
   };
 
   return (
-    <div className="container mx-auto flex min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
-      <Sidebar onNavigate={handleNavigate} currentUser={currentUser} onCompose={openComposerModal} onSwitchAccount={handleSwitchAccount} onLogout={() => alert('Logging out!')}/>
-      <main className="w-full max-w-[600px] border-x border-[var(--border-color)] min-h-screen">
-        {renderContent()}
-      </main>
-      <RightSidebar onNavigate={handleNavigate}/>
-      <Modal isOpen={isComposerModalOpen} onClose={() => setComposerModalOpen(false)}>
-        <TallkComposer 
-          onPostTallk={replyingTo ? (content) => handleReply(content, replyingTo.id) : (content, img, poll, quote) => handlePost(content, img, quote)}
-          replyingTo={replyingTo}
-          quoting={quoting}
-          currentUser={currentUser}
+    <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen">
+      <div className="container mx-auto flex">
+        <Sidebar 
+          currentUser={currentUser} 
+          onNavigate={handleNavigate} 
+          onCompose={() => openModal('compose')}
+          onSwitchAccount={setCurrentUser}
+          onLogout={() => alert('Logged out!')}
         />
-      </Modal>
-      {viewedStories && <StoryViewer isOpen={isStoryModalOpen} onClose={() => setStoryModalOpen(false)} storyData={viewedStories} />}
-       <Modal isOpen={isEditProfileModalOpen} onClose={() => setEditProfileModalOpen(false)}>
-         <EditProfileModal user={currentUser} onSave={handleUpdateProfile} onClose={() => setEditProfileModalOpen(false)} />
+        <main className="w-full max-w-[600px] border-x border-[var(--border-color)]">
+          {renderPage()}
+        </main>
+        <RightSidebar onNavigate={handleNavigate}/>
+      </div>
+      <StoryViewer isOpen={isStoryViewerOpen} onClose={() => setStoryViewerOpen(false)} storyData={storyData} />
+      <Modal isOpen={!!modalContent} onClose={closeModal}>
+        {renderModalContent()}
       </Modal>
     </div>
   );

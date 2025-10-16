@@ -1,121 +1,101 @@
-import React, { useState, useMemo } from 'react';
-import type { User, Tallk } from '../types';
+import React, { useState } from 'react';
+import type { Tallk, User } from '../types';
 import TallkPost from './TallkPost';
-import { VerifiedBadgeIcon, CalendarIcon, MoreIcon, TipJarIcon } from './IconComponents';
+import { MoreIcon } from './IconComponents';
 
 interface ProfilePageProps {
   user: User;
+  tallks: Tallk[];
   currentUser: User;
-  allTallks: Tallk[];
-  onNavigate: (page: 'profile' | 'tallkDetail' | 'analytics', data?: User | Tallk) => void;
+  onNavigate: (page: 'profile' | 'tallkDetail' | 'home', data?: User | Tallk) => void;
+  onEditProfile: () => void;
   bookmarks: Set<string>;
   onToggleBookmark: (tallkId: string) => void;
   onReply: (tallk: Tallk) => void;
   onQuote: (tallk: Tallk) => void;
   onLike: (tallkId: string) => void;
-  onEditProfile: () => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, currentUser, allTallks, onNavigate, bookmarks, onToggleBookmark, onReply, onQuote, onLike, onEditProfile }) => {
-  const [activeTab, setActiveTab] = useState<'tallks' | 'replies' | 'media' | 'likes'>('tallks');
-  
-  const userTallks = useMemo(() => allTallks.filter(t => t.author.id === user.id), [allTallks, user.id]);
+const ProfilePage: React.FC<ProfilePageProps> = ({ user, tallks, currentUser, onNavigate, onEditProfile, bookmarks, onToggleBookmark, onReply, onQuote, onLike }) => {
+  const [activeTab, setActiveTab] = useState('tallks');
+  const userTallks = tallks.filter(t => t.author.id === user.id);
 
-  const { pinnedTallk, otherTallks } = useMemo(() => {
-    const pinned = userTallks.find(t => t.isPinned);
-    const others = userTallks.filter(t => !t.isPinned);
-    return { pinnedTallk: pinned, otherTallks: others };
-  }, [userTallks]);
-
-  const likedTallks = useMemo(() => {
-    return allTallks.filter(t => user.likedTallkIds?.includes(t.id));
-  }, [allTallks, user.likedTallkIds])
-
-  const filteredTallks = useMemo(() => {
-    switch (activeTab) {
-      case 'replies':
-        // A better implementation would be to fetch replies where user is the author
-        return otherTallks.filter(t => t.content.startsWith('@')); 
-      case 'media':
-        return otherTallks.filter(t => !!t.image || !!t.videoUrl);
-      case 'likes':
-        return likedTallks; 
-      case 'tallks':
-      default:
-        return otherTallks;
-    }
-  }, [activeTab, otherTallks, likedTallks]);
-  
-  const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
+  const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button onClick={onClick} className="flex-1 py-4 text-center hover:bg-[var(--bg-secondary)]/50 transition-colors duration-200">
-        <span className={`font-bold ${isActive ? 'text-[var(--text-primary)] border-b-4 border-sky-500' : 'text-[var(--text-secondary)]'} pb-4`}>
-            {label}
-        </span>
+      <span className={`font-bold ${isActive ? 'text-[var(--text-primary)] border-b-4 border-sky-500' : 'text-[var(--text-secondary)]'} pb-4`}>
+        {label}
+      </span>
     </button>
   );
 
   return (
     <div>
-      <div className="sticky top-0 bg-[var(--bg-primary)] bg-opacity-80 backdrop-blur-md z-10 p-4 border-b border-[var(--border-color)]">
-        <h1 className="text-xl font-bold">{user.name}</h1>
-        <p className="text-sm text-[var(--text-secondary)]">{userTallks.length} Tallks</p>
+       <div className="sticky top-0 bg-[var(--bg-primary)] bg-opacity-80 backdrop-blur-md z-10 p-4 border-b border-[var(--border-color)] flex items-center space-x-4">
+         <button onClick={() => onNavigate('home')} className="hover:bg-[var(--bg-secondary)] rounded-full p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+         </button>
+         <div>
+            <h1 className="text-xl font-bold">{user.name}</h1>
+            <p className="text-sm text-[var(--text-secondary)]">{userTallks.length} Tallks</p>
+         </div>
       </div>
 
       <div>
         <div className="h-48 bg-slate-700 relative">
-          {user.banner && <img src={user.banner} alt="User banner" className="w-full h-full object-cover" />}
-           <div className={`absolute -bottom-16 left-4 ${user.hasActiveStory ? `ring-4 ring-offset-4 ring-offset-[var(--bg-primary)] ring-sky-400 rounded-full` : ''}`}>
-             <img src={user.avatar} alt="User avatar" className={`w-32 h-32 rounded-full border-4 border-[var(--bg-primary)]`} />
-           </div>
+            {user.banner && <img src={user.banner} alt="User banner" className="w-full h-full object-cover" />}
         </div>
-        
-        <div className="flex justify-end items-center p-4 border-b border-[var(--border-color)] space-x-2">
-            {currentUser.id === user.id ? (
-                 <button onClick={onEditProfile} className="border border-[var(--text-secondary)] font-bold py-1.5 px-4 rounded-full hover:bg-[var(--bg-secondary)]">Edit profile</button>
-            ) : (
-                <>
-                    <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><MoreIcon /></button>
-                    <button className="p-2 border border-[var(--text-secondary)] rounded-full hover:bg-[var(--bg-secondary)]"><TipJarIcon /></button>
-                    <button className="bg-sky-500 text-white font-bold py-1.5 px-4 rounded-full">Subscribe</button>
-                    <button className="border border-[var(--text-secondary)] text-white font-bold py-1.5 px-4 rounded-full">Follow</button>
-                </>
-            )}
+        <div className="p-4">
+            <div className="flex justify-between items-start">
+                <div className="-mt-20">
+                     <img src={user.avatar} alt="User avatar" className="w-32 h-32 rounded-full border-4 border-[var(--bg-primary)]" />
+                </div>
+                {currentUser.id === user.id ? (
+                    <button onClick={onEditProfile} className="border border-[var(--border-color)] font-bold px-4 py-1.5 rounded-full">Edit profile</button>
+                ) : (
+                    <div className="flex space-x-2">
+                        <button className="border border-[var(--border-color)] p-2 rounded-full"><MoreIcon className="w-5 h-5"/></button>
+                        <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full">Follow</button>
+                    </div>
+                )}
+            </div>
+            <div className="mt-2">
+                <h2 className="text-xl font-bold">{user.name}</h2>
+                <p className="text-[var(--text-secondary)]">@{user.username}</p>
+            </div>
+            <p className="mt-2">{user.bio}</p>
+            <div className="flex space-x-4 text-[var(--text-secondary)] mt-2 text-sm">
+                <span>{user.location}</span>
+                <span><a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">{user.website}</a></span>
+                <span>{user.joinedDate}</span>
+            </div>
+            <div className="flex space-x-4 mt-2">
+                <span><span className="font-bold">{user.following}</span> Following</span>
+                <span><span className="font-bold">{user.followers}</span> Followers</span>
+            </div>
         </div>
+      </div>
+      
+      <div className="border-b border-[var(--border-color)] flex">
+        <TabButton label="Tallks" isActive={activeTab === 'tallks'} onClick={() => setActiveTab('tallks')} />
+        <TabButton label="Replies" isActive={activeTab === 'replies'} onClick={() => setActiveTab('replies')} />
+        <TabButton label="Media" isActive={activeTab === 'media'} onClick={() => setActiveTab('media')} />
+        <TabButton label="Likes" isActive={activeTab === 'likes'} onClick={() => setActiveTab('likes')} />
+      </div>
 
-        <div className="p-4 border-b border-[var(--border-color)]">
-          <div className="flex items-center space-x-1">
-            <h2 className="text-xl font-bold">{user.name}</h2>
-            {user.isVerified && <VerifiedBadgeIcon className="w-6 h-6 text-sky-400" />}
-          </div>
-          <p className="text-[var(--text-secondary)]">@{user.username}</p>
-          {user.isProfessional && <p className="text-sm text-sky-400 mt-1 cursor-pointer hover:underline" onClick={() => onNavigate('analytics', user)}>View professional tools</p>}
-          <p className="mt-2">{user.bio}</p>
-          <div className="flex space-x-4 mt-2 text-[var(--text-secondary)] text-sm flex-wrap">
-            {user.location && <span className="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> {user.location}</span>}
-            {user.website && <span className="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg> <a href={`https://${user.website}`} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">{user.website}</a></span>}
-            {user.birthday && <span className="flex items-center"><CalendarIcon className="w-4 h-4 mr-1"/> Born {new Date(user.birthday).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>}
-          </div>
-          <div className="flex space-x-4 mt-2">
-            <span><span className="font-bold text-white">{user.following}</span> <span className="text-[var(--text-secondary)]">Following</span></span>
-            <span><span className="font-bold text-white">{user.followers.toLocaleString()}</span> <span className="text-[var(--text-secondary)]">Followers</span></span>
-          </div>
-        </div>
-
-        <div className="flex border-b border-[var(--border-color)]">
-            <TabButton label="Tallks" isActive={activeTab === 'tallks'} onClick={() => setActiveTab('tallks')} />
-            <TabButton label="Replies" isActive={activeTab === 'replies'} onClick={() => setActiveTab('replies')} />
-            <TabButton label="Media" isActive={activeTab === 'media'} onClick={() => setActiveTab('media')} />
-            <TabButton label="Likes" isActive={activeTab === 'likes'} onClick={() => setActiveTab('likes')} />
-        </div>
-
-        <div>
-          {activeTab === 'tallks' && pinnedTallk && (
-              <TallkPost key={pinnedTallk.id} tallk={pinnedTallk} currentUser={currentUser} onNavigate={onNavigate} isBookmarked={bookmarks.has(pinnedTallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} onQuote={onQuote} onLike={onLike} />
-          )}
-          {filteredTallks.map(tallk => (
-            <TallkPost key={tallk.id} tallk={tallk} currentUser={currentUser} onNavigate={onNavigate} isBookmarked={bookmarks.has(tallk.id)} onToggleBookmark={onToggleBookmark} onReply={onReply} onQuote={onQuote} onLike={onLike} />
-          ))}
-        </div>
+      <div>
+        {userTallks.map(tallk => (
+             <TallkPost 
+                key={tallk.id} 
+                tallk={tallk} 
+                currentUser={currentUser}
+                onNavigate={onNavigate} 
+                isBookmarked={bookmarks.has(tallk.id)}
+                onToggleBookmark={onToggleBookmark}
+                onReply={onReply}
+                onQuote={onQuote}
+                onLike={onLike}
+              />
+        ))}
       </div>
     </div>
   );
