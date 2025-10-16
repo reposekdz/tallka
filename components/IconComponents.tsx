@@ -252,3 +252,9 @@ export const CalendarIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => 
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
 );
+
+export const MagicIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10 2.5a.75.75 0 01.75.75V5a.75.75 0 01-1.5 0V3.25a.75.75 0 01.75-.75zM5.05 5.05a.75.75 0 011.06 0L7.5 6.44a.75.75 0 11-1.06 1.06L5.05 6.11a.75.75 0 010-1.06zM2.5 10a.75.75 0 01.75-.75H5a.75.75 0 010 1.5H3.25a.75.75 0 01-.75-.75zM5.05 14.95a.75.75 0 010-1.06L6.44 12.5a.75.75 0 011.06 1.06L6.11 14.95a.75.75 0 01-1.06 0zM10 17.5a.75.75 0 01.75-.75H12a.75.75 0 010 1.5h-1.25a.75.75 0 01-.75-.75zM14.95 14.95a.75.75 0 01-1.06 0L12.5 13.56a.75.75 0 011.06-1.06l1.39 1.39a.75.75 0 010 1.06zM17.5 10a.75.75 0 01.75.75V12a.75.75 0 01-1.5 0v-1.25a.75.75 0 01.75-.75zM14.95 5.05a.75.75 0 010 1.06L13.56 7.5a.75.75 0 01-1.06-1.06l1.39-1.39a.75.75 0 011.06 0z" clipRule="evenodd" />
+    </svg>
+);
